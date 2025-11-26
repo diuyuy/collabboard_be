@@ -7,3 +7,8 @@ export type MemberInfo = {
 };
 
 export type RequestWithUser = Omit<Request, 'user'> & { user: MemberInfo };
+
+export type AuthTokens = {
+  accessToken: string;
+  refreshToken: string;
+};

@@ -1,14 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { Member } from 'generated/prisma/client';
 import { PrismaService } from 'src/core/infrastructure/prisma-module/prisma.service';
+import { CreateMemberDto } from './dto/create-member.dto';
 import { MemberResponseDto } from './dto/member-response.dto';
 
 @Injectable()
 export class MemberService {
   constructor(private readonly prismaService: PrismaService) {}
-  // create(createMemberDto: CreateMemberDto) {
-  //   return 'This action adds a new member';
-  // }
+  async create(createMemberDto: CreateMemberDto): Promise<MemberResponseDto> {
+    const member = await this.prismaService.member.create({
+      data: {
+        ...createMemberDto,
+      },
+    });
+
+    return MemberResponseDto.from(member);
+  }
 
   findAll() {
     return `This action returns all member`;

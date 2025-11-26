@@ -9,11 +9,13 @@ export enum ResponseCode {
 
   //400 BAD REQUEST
   BAD_REQUEST = 'BAD_REQUEST',
+  INVALID_AUTH_CODE = 'INVALID_AUTH_CODE',
 
   //401 Unauthorized
   UNAUTHORIZED = 'UNAUTHORIZED',
   INVALID_JWT_TOKEN = 'INVALID_JWT_TOKEN',
   INVALID_AUTH_FORMAT = 'INVALID_AUTH_FORMAT',
+  INVALID_REFRESH_TOKEN = 'INVALID_REFRESH_TOKEN',
 
   // 403 Forbidden
   FORBIDDEN = 'FORBIDDEN',
@@ -24,6 +26,7 @@ export enum ResponseCode {
 
   // 500 Internal Server Error
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
+  SEND_EMAIL_FAIL = 'SEND_EMAIL_FAIL',
 }
 
 export class ResponseStatus {
@@ -63,6 +66,13 @@ export class ResponseStatusFactory {
       message: '잘못된 요청입니다.',
     },
 
+    [ResponseCode.INVALID_AUTH_CODE]: {
+      success: false,
+      code: ResponseCode.INVALID_AUTH_CODE,
+      status: HttpStatus.BAD_REQUEST,
+      message: '잘못된 요청입니다.',
+    },
+
     // 401
     [ResponseCode.UNAUTHORIZED]: {
       success: false,
@@ -83,6 +93,13 @@ export class ResponseStatusFactory {
       code: ResponseCode.INVALID_AUTH_FORMAT,
       status: HttpStatus.UNAUTHORIZED,
       message: '유효하지 않은 인증 요청 형식입니다.',
+    },
+
+    [ResponseCode.INVALID_REFRESH_TOKEN]: {
+      success: false,
+      code: ResponseCode.INVALID_REFRESH_TOKEN,
+      status: HttpStatus.UNAUTHORIZED,
+      message: '유효하지 않은 리프레시 토큰입니다.',
     },
 
     // 403
@@ -114,6 +131,13 @@ export class ResponseStatusFactory {
       code: ResponseCode.INTERNAL_SERVER_ERROR,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       message: '서버 내부 오류가 발생했습니다.',
+    },
+
+    [ResponseCode.SEND_EMAIL_FAIL]: {
+      success: false,
+      code: ResponseCode.SEND_EMAIL_FAIL,
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: '이메일 발송을 실패했습니다.',
     },
   };
 }
