@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Board {
+  id              BigInt    @id @default(autoincrement())
+  title           String    @db.VarChar(100)
+  description     String?   @db.Text
+  backgroundColor String    @db.VarChar(7)
+  workspaceId     BigInt
+  ownerId         BigInt?
+  createdAt       DateTime  @default(dbgenerated("(now())")) @db.DateTime(0)
+  updatedAt       DateTime  @default(dbgenerated("(now())")) @db.DateTime(0)
+  Workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade, map: "Board_ibfk_1")
+  Member          Member?   @relation(fields: [ownerId], references: [id], map: "Board_ibfk_2")
+  Label           Label[]
+  List            List[]
+
+  @@index([ownerId], map: "ownerId")
+  @@index([workspaceId], map: "workspaceId")
+}
+
+model Card {
+  id           BigInt         @id @default(autoincrement())
+  title        String         @db.VarChar(100)
+  description  String?        @db.Text
+  listId       BigInt?
+  position     String         @db.VarChar(255)
+  priority     Card_priority
+  status       Card_status    @default(UNKNOWN)
+  createdAt    DateTime       @default(dbgenerated("(now())")) @db.DateTime(0)
+  updatedAt    DateTime       @default(dbgenerated("(now())")) @db.DateTime(0)
+  List         List?          @relation(fields: [listId], references: [id], onDelete: Cascade, map: "Card_ibfk_1")
+  CardAssignee CardAssignee[]
+  CardLabel    CardLabel[]
+  Comment      Comment[]
+
+  @@index([listId], map: "listId")
+}
+
+model CardAssignee {
+  id        BigInt   @id @default(autoincrement())
+  cardId    BigInt
+  memberId  BigInt
+  createdAt DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  Card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade, map: "CardAssignee_ibfk_1")
+  Member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade, map: "CardAssignee_ibfk_2")
+
+  @@unique([memberId, cardId], map: "idx_member_card")
+  @@index([cardId], map: "cardId")
+}
+
+model CardLabel {
+  id      BigInt @id @default(autoincrement())
+  cardId  BigInt
+  labelId BigInt
+  Card    Card   @relation(fields: [cardId], references: [id], onDelete: Cascade, map: "CardLabel_ibfk_1")
+  Label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade, map: "CardLabel_ibfk_2")
+
+  @@unique([labelId, cardId], map: "idx_label_card")
+  @@index([cardId], map: "cardId")
+}
+
+model Comment {
+  id        BigInt   @id @default(autoincrement())
+  memberId  BigInt?
+  cardId    BigInt?
+  content   String   @db.Text
+  createdAt DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  updatedAt DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  Member    Member?  @relation(fields: [memberId], references: [id], map: "Comment_ibfk_1")
+  Card      Card?    @relation(fields: [cardId], references: [id], onDelete: Cascade, map: "Comment_ibfk_2")
+
+  @@index([cardId], map: "cardId")
+  @@index([memberId], map: "memberId")
+}
+
+model Label {
+  id        BigInt      @id @default(autoincrement())
+  title     String      @db.VarChar(100)
+  color     String      @db.VarChar(7)
+  boardId   BigInt
+  createdAt DateTime    @default(dbgenerated("(now())")) @db.DateTime(0)
+  updatedAt DateTime    @default(dbgenerated("(now())")) @db.DateTime(0)
+  CardLabel CardLabel[]
+  Board     Board       @relation(fields: [boardId], references: [id], onDelete: Cascade, map: "Label_ibfk_1")
+
+  @@index([boardId], map: "boardId")
+}
+
+model List {
+  id        BigInt   @id @default(autoincrement())
+  boardId   BigInt
+  title     String   @db.VarChar(255)
+  position  String   @db.VarChar(255)
+  createdAt DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  updatedAt DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  Card      Card[]
+  Board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade, map: "List_ibfk_1")
+
+  @@index([boardId], map: "boardId")
+}
+
+model Member {
+  id              BigInt            @id @default(autoincrement())
+  email           String            @unique(map: "email") @db.VarChar(255)
+  password        String?           @db.VarChar(60)
+  nickname        String?           @unique(map: "nickname") @db.VarChar(50)
+  role            Member_role       @default(USER)
+  createdAt       DateTime          @default(dbgenerated("(now())")) @db.DateTime(0)
+  updatedAt       DateTime          @default(dbgenerated("(now())")) @db.DateTime(0)
+  Board           Board[]
+  CardAssignee    CardAssignee[]
+  Comment         Comment[]
+  Workspace       Workspace[]
+  WorkspaceMember WorkspaceMember[]
+}
+
+model Workspace {
+  id              BigInt            @id @default(autoincrement())
+  name            String            @db.VarChar(255)
+  ownerId         BigInt
+  description     String?           @db.Text
+  createdAt       DateTime          @default(dbgenerated("(now())")) @db.DateTime(0)
+  updatedAt       DateTime          @default(dbgenerated("(now())")) @db.DateTime(0)
+  Board           Board[]
+  Member          Member            @relation(fields: [ownerId], references: [id], onDelete: Cascade, map: "Workspace_ibfk_1")
+  WorkspaceMember WorkspaceMember[]
+
+  @@unique([ownerId, name], map: "idx_member_name")
+}
+
+model WorkspaceMember {
+  id          BigInt               @id @default(autoincrement())
+  workspaceId BigInt
+  memberId    BigInt
+  role        WorkspaceMember_role
+  joinAt      DateTime             @default(dbgenerated("(now())")) @db.DateTime(0)
+  createdAt   DateTime             @default(dbgenerated("(now())")) @db.DateTime(0)
+  updatedAt   DateTime             @default(dbgenerated("(now())")) @db.DateTime(0)
+  Workspace   Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade, map: "WorkspaceMember_ibfk_1")
+  Member      Member               @relation(fields: [memberId], references: [id], onDelete: Cascade, map: "WorkspaceMember_ibfk_2")
+
+  @@unique([workspaceId, memberId], map: "idx_member_workspace")
+  @@index([memberId], map: "memberId")
+}
+
+enum WorkspaceMember_role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum Member_role {
+  USER
+  ADMIN
+}
+
+enum Card_priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum Card_status {
+  TODO
+  IN_PROGRESS
+  DONE
+  UNKNOWN
+}
