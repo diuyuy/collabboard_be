@@ -14,8 +14,8 @@ model Board {
   backgroundColor String    @db.VarChar(7)
   workspaceId     BigInt
   ownerId         BigInt?
-  createdAt       DateTime  @default(dbgenerated("(now())")) @db.DateTime(0)
-  updatedAt       DateTime  @default(dbgenerated("(now())")) @db.DateTime(0)
+  createdAt       DateTime  @default(now()) @db.DateTime(0)
+  updatedAt       DateTime  @updatedAt @db.DateTime(0)
   Workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade, map: "Board_ibfk_1")
   Member          Member?   @relation(fields: [ownerId], references: [id], map: "Board_ibfk_2")
   Label           Label[]
@@ -33,8 +33,8 @@ model Card {
   position     String         @db.VarChar(255)
   priority     Card_priority
   status       Card_status    @default(UNKNOWN)
-  createdAt    DateTime       @default(dbgenerated("(now())")) @db.DateTime(0)
-  updatedAt    DateTime       @default(dbgenerated("(now())")) @db.DateTime(0)
+  createdAt    DateTime       @default(now()) @db.DateTime(0)
+  updatedAt    DateTime       @updatedAt @db.DateTime(0)
   List         List?          @relation(fields: [listId], references: [id], onDelete: Cascade, map: "Card_ibfk_1")
   CardAssignee CardAssignee[]
   CardLabel    CardLabel[]
@@ -47,7 +47,7 @@ model CardAssignee {
   id        BigInt   @id @default(autoincrement())
   cardId    BigInt
   memberId  BigInt
-  createdAt DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  createdAt DateTime @default(now()) @db.DateTime(0)
   Card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade, map: "CardAssignee_ibfk_1")
   Member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade, map: "CardAssignee_ibfk_2")
 
@@ -71,8 +71,8 @@ model Comment {
   memberId  BigInt?
   cardId    BigInt?
   content   String   @db.Text
-  createdAt DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
-  updatedAt DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  updatedAt DateTime @updatedAt @db.DateTime(0)
   Member    Member?  @relation(fields: [memberId], references: [id], map: "Comment_ibfk_1")
   Card      Card?    @relation(fields: [cardId], references: [id], onDelete: Cascade, map: "Comment_ibfk_2")
 
@@ -85,8 +85,8 @@ model Label {
   title     String      @db.VarChar(100)
   color     String      @db.VarChar(7)
   boardId   BigInt
-  createdAt DateTime    @default(dbgenerated("(now())")) @db.DateTime(0)
-  updatedAt DateTime    @default(dbgenerated("(now())")) @db.DateTime(0)
+  createdAt DateTime    @default(now()) @db.DateTime(0)
+  updatedAt DateTime    @updatedAt @db.DateTime(0)
   CardLabel CardLabel[]
   Board     Board       @relation(fields: [boardId], references: [id], onDelete: Cascade, map: "Label_ibfk_1")
 
@@ -98,8 +98,8 @@ model List {
   boardId   BigInt
   title     String   @db.VarChar(255)
   position  String   @db.VarChar(255)
-  createdAt DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
-  updatedAt DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  updatedAt DateTime @updatedAt @db.DateTime(0)
   Card      Card[]
   Board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade, map: "List_ibfk_1")
 
@@ -112,8 +112,8 @@ model Member {
   password        String?           @db.VarChar(60)
   nickname        String?           @unique(map: "nickname") @db.VarChar(50)
   role            Member_role       @default(USER)
-  createdAt       DateTime          @default(dbgenerated("(now())")) @db.DateTime(0)
-  updatedAt       DateTime          @default(dbgenerated("(now())")) @db.DateTime(0)
+  createdAt       DateTime          @default(now()) @db.DateTime(0)
+  updatedAt       DateTime          @updatedAt @db.DateTime(0)
   Board           Board[]
   CardAssignee    CardAssignee[]
   Comment         Comment[]
@@ -126,8 +126,8 @@ model Workspace {
   name            String            @db.VarChar(255)
   ownerId         BigInt
   description     String?           @db.Text
-  createdAt       DateTime          @default(dbgenerated("(now())")) @db.DateTime(0)
-  updatedAt       DateTime          @default(dbgenerated("(now())")) @db.DateTime(0)
+  createdAt       DateTime          @default(now()) @db.DateTime(0)
+  updatedAt       DateTime          @updatedAt @db.DateTime(0)
   Board           Board[]
   Member          Member            @relation(fields: [ownerId], references: [id], onDelete: Cascade, map: "Workspace_ibfk_1")
   WorkspaceMember WorkspaceMember[]
@@ -140,9 +140,9 @@ model WorkspaceMember {
   workspaceId BigInt
   memberId    BigInt
   role        WorkspaceMember_role
-  joinAt      DateTime             @default(dbgenerated("(now())")) @db.DateTime(0)
-  createdAt   DateTime             @default(dbgenerated("(now())")) @db.DateTime(0)
-  updatedAt   DateTime             @default(dbgenerated("(now())")) @db.DateTime(0)
+  joinAt      DateTime             @default(now()) @db.DateTime(0)
+  createdAt   DateTime             @default(now()) @db.DateTime(0)
+  updatedAt   DateTime             @updatedAt @db.DateTime(0)
   Workspace   Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade, map: "WorkspaceMember_ibfk_1")
   Member      Member               @relation(fields: [memberId], references: [id], onDelete: Cascade, map: "WorkspaceMember_ibfk_2")
 

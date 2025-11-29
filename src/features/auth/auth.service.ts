@@ -16,6 +16,7 @@ import { IoRedisService } from 'src/core/infrastructure/io-redis/io-redis.servic
 import { v4 as uuidv4 } from 'uuid';
 import { MemberResponseDto } from '../member/dto/member-response.dto';
 import { MemberService } from '../member/member.service';
+import { PasswdResetRequestDto } from './dto/passwd-reset-request.dto';
 import { SignUpRequestDto } from './dto/sign-up-request.dto';
 import { AuthTokens, MemberInfo } from './types/types';
 
@@ -56,9 +57,13 @@ export class AuthService {
     return { accessToken, refreshToken, memberResponseDto };
   }
 
-  async signUp({ email, password, authCode }: SignUpRequestDto): Promise<void> {
-    await this.validateAuthCode(email, authCode);
-    await this.ioRedisService.del(this.generateAuthCodeKey(email));
+  async signUp({
+    email,
+    password,
+    verifycationCode,
+  }: SignUpRequestDto): Promise<void> {
+    await this.validateVerifycationCode(email, verifycationCode);
+    await this.ioRedisService.del(this.generateVerifycationCodeKey(email));
 
     const hashedPassword = await bcrypt.hash(password, this.SALT_OR_AROUNDS);
 
@@ -80,6 +85,7 @@ export class AuthService {
     await this.ioRedisService.del(refreshTokenKey);
   }
 
+  // 이메일 패스워드로 로그인 시 이메일 패스워드 유효한 지 체크하는 메서드
   async validateUser(email: string, password: string): Promise<Member | null> {
     const member = await this.memberService.findByEmail(email);
 
@@ -88,21 +94,35 @@ export class AuthService {
     return (await bcrypt.compare(password, member.password)) ? member : null;
   }
 
-  async sendAuthCodeEmail(email: string): Promise<void> {
-    const authCode = randomInt(1000000).toString().padStart(6, '0');
+  async sendVerifycationCodeEmail(email: string): Promise<void> {
+    const isEmailExsits = await this.checkEmailExists(email);
+
+    if (isEmailExsits)
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.EMAIL_ALREADY_EXSITS),
+      );
+
+    const verifycationCode = randomInt(1000000).toString().padStart(6, '0');
 
     try {
       await this.ioRedisService.set(
-        this.generateAuthCodeKey(email),
-        authCode,
-        3 * 60 + 30, // 이메일 전송 시간 고려
+        this.generateVerifycationCodeKey(email),
+        verifycationCode,
+        'EX',
+        3 * 60 + 30, // +30 이메일 전송 시간 고려
       );
     } catch {
       throw new CommonHttpException(
         ResponseStatusFactory.create(ResponseCode.SEND_EMAIL_FAIL),
       );
     }
-    await this.emailService.sendAuthCodeEmail(email, authCode);
+    await this.emailService.sendVerifycationCodeEmail(email, verifycationCode);
+  }
+
+  async checkEmailExists(email: string): Promise<boolean> {
+    const member = await this.memberService.findByEmail(email);
+
+    return !!member;
   }
 
   async refreshToken(refreshToken: string): Promise<AuthTokens> {
@@ -119,7 +139,7 @@ export class AuthService {
     const accessToken = this.generateAccessToken(memberInfo);
     const newRefreshToken = await this.generateRefreshToken(memberInfo);
 
-    // 기존에 저장되어 있던 refreshToken 및 memberInfo 삭제
+    // 기존에 저장되어 있던 refreshToken 삭제
     await Promise.all([
       this.ioRedisService.del(refreshTokenKey),
       this.ioRedisService.srem(
@@ -131,14 +151,87 @@ export class AuthService {
     return { accessToken, refreshToken: newRefreshToken };
   }
 
-  private async validateAuthCode(email: string, authCode: string) {
-    const storedAuthCode = await this.ioRedisService.get(
-      this.generateAuthCodeKey(email),
+  async revokeAllRefreshTokens(memberId: string): Promise<void> {
+    const memberTokenKey = this.generateMemberTokenKey(memberId);
+
+    const storedRefreshTokens =
+      await this.ioRedisService.smembers(memberTokenKey);
+
+    if (storedRefreshTokens.length === 0) return;
+
+    await Promise.all([
+      ...storedRefreshTokens.map((token) =>
+        this.ioRedisService.del(this.generateRefreshTokenKey(token)),
+      ),
+      this.ioRedisService.del(memberTokenKey),
+    ]);
+  }
+
+  async sendResetPasswordEmail(email: string) {
+    const member = await this.memberService.findByEmail(email);
+
+    if (!member)
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.EMAIL_NOT_FOUND),
+      );
+
+    const authToken = uuidv4();
+
+    try {
+      await this.ioRedisService.set(
+        this.generateAuthTokenKey(authToken),
+        email,
+        'EX',
+        10 * 60 + 30, // +30: 이메일 전송 시간 고려
+      );
+      await this.emailService.sendResetPasswordEmail(email, authToken);
+    } catch {
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.SEND_EMAIL_FAIL),
+      );
+    }
+  }
+
+  async resetPassword({
+    authToken,
+    password,
+  }: PasswdResetRequestDto): Promise<void> {
+    const authTokenKey = this.generateAuthTokenKey(authToken);
+    const email = await this.ioRedisService.get(authTokenKey);
+
+    if (!email)
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.INVALID_AUTH_TOKEN),
+      );
+
+    const [, hashResult] = await Promise.allSettled([
+      this.ioRedisService.del(authTokenKey),
+      bcrypt.hash(password, this.SALT_OR_AROUNDS),
+    ]);
+
+    if (hashResult.status === 'rejected') {
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.HASH_PASSWORD_FAIL),
+      );
+    }
+
+    await this.memberService.updatePassword(email, hashResult.value);
+  }
+
+  private async validateVerifycationCode(
+    email: string,
+    verifycationCode: string,
+  ) {
+    const storedVerifycationCode = await this.ioRedisService.get(
+      this.generateVerifycationCodeKey(email),
     );
 
-    if (!storedAuthCode || storedAuthCode !== authCode) {
+    if (
+      !storedVerifycationCode ||
+      storedVerifycationCode !== verifycationCode
+    ) {
       throw new CommonHttpException(
-        ResponseStatusFactory.create(ResponseCode.INVALID_AUTH_CODE),
+        ResponseStatusFactory.create(ResponseCode.INVALID_VERIFYCATION_CODE),
       );
     }
   }
@@ -157,28 +250,29 @@ export class AuthService {
 
     const ttlSeconds = expireDay * 24 * 3600;
 
+    const memberTokenKey = this.generateMemberTokenKey(memberInfo.id);
+
     await Promise.all([
       this.ioRedisService.set(
         this.generateRefreshTokenKey(refreshToken),
         JSON.stringify(memberInfo),
+        'EX',
         ttlSeconds,
       ),
-      this.ioRedisService.sadd(
-        this.generateMemberTokenKey(memberInfo.id),
-        refreshToken,
-      ),
+      this.ioRedisService.sadd(memberTokenKey, refreshToken),
     ]);
 
-    await this.ioRedisService.expire(
-      this.generateMemberTokenKey(memberInfo.id),
-      ttlSeconds,
-    );
+    await this.ioRedisService.expire(memberTokenKey, ttlSeconds);
 
     return refreshToken;
   }
 
-  private generateAuthCodeKey(email: string): string {
+  private generateVerifycationCodeKey(email: string): string {
     return `AUTH_CODE:${email}`;
+  }
+
+  private generateAuthTokenKey(authToken: string): string {
+    return `AUTH_TOKEN:${authToken}`;
   }
 
   private generateRefreshTokenKey(refreshToken: string): string {

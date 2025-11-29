@@ -25,11 +25,11 @@ export class EmailService {
     });
   }
 
-  async sendAuthCodeEmail(email: string, authCode: string) {
+  async sendVerifycationCodeEmail(email: string, verifycationCode: string) {
     try {
       const html = await this.generateHtml({
         filename: HTML_PATH.AUTH_CODE_EMAIL,
-        values: { authCode },
+        values: { verifycationCode },
       });
 
       await this.transporter.sendMail({

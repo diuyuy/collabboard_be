@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CookieOptions, Response } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 import { AUTH_ENV } from 'src/core/config/auth-env';
 import { EnvSchema } from 'src/core/config/validateEnv';
 import { COOKIE_NAME } from 'src/core/constants/cookie-name';
 
+type SetCookieOption = 'SIGN_OUT' | 'SIGN_IN' | 'REFRESH_TOKEN';
 @Injectable()
 export class CookieService {
   constructor(private readonly configService: ConfigService<EnvSchema, true>) {}
@@ -13,19 +14,31 @@ export class CookieService {
     res: Response,
     accessToken: string,
     refreshToken: string,
-    isSignIn: boolean = true,
+    setCookieOption: SetCookieOption,
   ) {
     res.cookie(
       COOKIE_NAME.ACCESS_TOKEN,
       accessToken,
-      isSignIn ? this.getAccessTokenCookieOption() : this.getSignOutOptions(),
+      setCookieOption === 'SIGN_OUT'
+        ? this.getSignOutOptions()
+        : this.getAccessTokenCookieOption(),
     );
 
     res.cookie(
-      COOKIE_NAME.REFRESH_TOKE,
+      COOKIE_NAME.REFRESH_TOKEN,
       refreshToken,
-      isSignIn ? this.getRefreshTokenCookieOption() : this.getSignOutOptions(),
+      setCookieOption === 'SIGN_OUT'
+        ? this.getSignOutOptions()
+        : this.getAccessTokenCookieOption(),
     );
+  }
+
+  getCookie(req: Request, isRefreshToken: boolean = true): string | null {
+    const token = isRefreshToken
+      ? (req.cookies[COOKIE_NAME.REFRESH_TOKEN] as string | undefined)
+      : (req.cookies[COOKIE_NAME.ACCESS_TOKEN] as string | undefined);
+
+    return token ?? null;
   }
 
   private getAccessTokenCookieOption(): CookieOptions {

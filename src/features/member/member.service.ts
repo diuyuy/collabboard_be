@@ -41,6 +41,17 @@ export class MemberService {
     });
   }
 
+  async updatePassword(email: string, password: string): Promise<void> {
+    await this.prismaService.member.update({
+      data: {
+        password,
+      },
+      where: {
+        email,
+      },
+    });
+  }
+
   // update(id: number, updateMemberDto: UpdateMemberDto) {
   //   return `This action updates a #${id} member`;
   // }
