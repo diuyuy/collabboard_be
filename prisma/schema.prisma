@@ -8,12 +8,12 @@ datasource db {
 }
 
 model Board {
-  id              BigInt    @id @default(autoincrement())
+  id              String    @id @default(cuid())
   title           String    @db.VarChar(100)
   description     String?   @db.Text
   backgroundColor String    @db.VarChar(7)
-  workspaceId     BigInt
-  ownerId         BigInt?
+  workspaceId     String
+  ownerId         String?
   createdAt       DateTime  @default(now()) @db.DateTime(0)
   updatedAt       DateTime  @updatedAt @db.DateTime(0)
   Workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade, map: "Board_ibfk_1")
@@ -26,10 +26,10 @@ model Board {
 }
 
 model Card {
-  id           BigInt         @id @default(autoincrement())
+  id           String         @id @default(cuid())
   title        String         @db.VarChar(100)
   description  String?        @db.Text
-  listId       BigInt?
+  listId       String?
   position     String         @db.VarChar(255)
   priority     Card_priority
   status       Card_status    @default(UNKNOWN)
@@ -44,9 +44,9 @@ model Card {
 }
 
 model CardAssignee {
-  id        BigInt   @id @default(autoincrement())
-  cardId    BigInt
-  memberId  BigInt
+  id        String   @id @default(cuid())
+  cardId    String
+  memberId  String
   createdAt DateTime @default(now()) @db.DateTime(0)
   Card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade, map: "CardAssignee_ibfk_1")
   Member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade, map: "CardAssignee_ibfk_2")
@@ -56,9 +56,9 @@ model CardAssignee {
 }
 
 model CardLabel {
-  id      BigInt @id @default(autoincrement())
-  cardId  BigInt
-  labelId BigInt
+  id      String @id @default(cuid())
+  cardId  String
+  labelId String
   Card    Card   @relation(fields: [cardId], references: [id], onDelete: Cascade, map: "CardLabel_ibfk_1")
   Label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade, map: "CardLabel_ibfk_2")
 
@@ -67,9 +67,9 @@ model CardLabel {
 }
 
 model Comment {
-  id        BigInt   @id @default(autoincrement())
-  memberId  BigInt?
-  cardId    BigInt?
+  id        String   @id @default(cuid())
+  memberId  String?
+  cardId    String?
   content   String   @db.Text
   createdAt DateTime @default(now()) @db.DateTime(0)
   updatedAt DateTime @updatedAt @db.DateTime(0)
@@ -81,10 +81,10 @@ model Comment {
 }
 
 model Label {
-  id        BigInt      @id @default(autoincrement())
+  id        String      @id @default(cuid())
   title     String      @db.VarChar(100)
   color     String      @db.VarChar(7)
-  boardId   BigInt
+  boardId   String
   createdAt DateTime    @default(now()) @db.DateTime(0)
   updatedAt DateTime    @updatedAt @db.DateTime(0)
   CardLabel CardLabel[]
@@ -94,8 +94,8 @@ model Label {
 }
 
 model List {
-  id        BigInt   @id @default(autoincrement())
-  boardId   BigInt
+  id        String   @id @default(cuid())
+  boardId   String
   title     String   @db.VarChar(255)
   position  String   @db.VarChar(255)
   createdAt DateTime @default(now()) @db.DateTime(0)
@@ -107,7 +107,7 @@ model List {
 }
 
 model Member {
-  id              BigInt            @id @default(autoincrement())
+  id              String            @id @default(cuid())
   email           String            @unique(map: "email") @db.VarChar(255)
   password        String?           @db.VarChar(60)
   nickname        String?           @unique(map: "nickname") @db.VarChar(50)
@@ -122,9 +122,9 @@ model Member {
 }
 
 model Workspace {
-  id              BigInt            @id @default(autoincrement())
+  id              String            @id @default(cuid())
   name            String            @db.VarChar(255)
-  ownerId         BigInt
+  ownerId         String
   description     String?           @db.Text
   createdAt       DateTime          @default(now()) @db.DateTime(0)
   updatedAt       DateTime          @updatedAt @db.DateTime(0)
@@ -136,9 +136,9 @@ model Workspace {
 }
 
 model WorkspaceMember {
-  id          BigInt               @id @default(autoincrement())
-  workspaceId BigInt
-  memberId    BigInt
+  id          String               @id @default(cuid())
+  workspaceId String
+  memberId    String
   role        WorkspaceMember_role
   joinAt      DateTime             @default(now()) @db.DateTime(0)
   createdAt   DateTime             @default(now()) @db.DateTime(0)

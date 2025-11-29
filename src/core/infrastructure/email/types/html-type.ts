@@ -2,7 +2,7 @@ export type HtmlType =
   | {
       filename: string;
       values: {
-        verifycationCode: string;
+        verificationCode: string;
       };
     }
   | {

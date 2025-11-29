@@ -1,6 +1,6 @@
 import { Pageable } from '../types/types';
 
-export class PageReponse<T> {
+export class PageResponse<T> {
   items: T[];
   page: number;
   size: number;
@@ -8,7 +8,7 @@ export class PageReponse<T> {
   totalElements: number;
   totalPages: number;
 
-  constructor(pageResponse: PageReponse<T>) {
+  constructor(pageResponse: PageResponse<T>) {
     this.items = pageResponse.items;
     this.page = pageResponse.page;
     this.size = pageResponse.size;
@@ -22,7 +22,7 @@ export class PageReponse<T> {
     totalElements: number,
     { page, size }: Pageable<R>,
   ) {
-    return new PageReponse({
+    return new PageResponse({
       items,
       hasNext: totalElements > page * size + items.length,
       page,

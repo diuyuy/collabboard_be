@@ -25,5 +25,5 @@ export class SignUpRequestDto {
     pattern: '^\\d{6}$',
   })
   @Matches(/^\d{6}$/)
-  verifycationCode: string;
+  verificationCode: string;
 }

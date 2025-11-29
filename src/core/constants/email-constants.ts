@@ -11,3 +11,8 @@ export const EMAIL_SUBJECT = {
   VALIDATE_AUTH_CODE: 'Learning Mate 이메일 인증',
   PASSWORD_RESET: 'Learning Mate 비밀번호 변경',
 } as const;
+
+export const EMAIL_CONSTANTS = {
+  VERIFICATION_CODE_TTLSECONDS: 3 * 60 + 30, // 이메일 전송시간 고려
+  AUTH_TOKEN_TTLSECONDS: 10 * 60 + 30, // 이메일 전송시간 고려
+} as const;

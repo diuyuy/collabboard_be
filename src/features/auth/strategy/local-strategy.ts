@@ -30,6 +30,6 @@ export class LocalStrategy extends PassportStrategy(
       );
     }
 
-    return { id: String(member.id), role: member.role };
+    return { id: member.id, role: member.role };
   }
 }

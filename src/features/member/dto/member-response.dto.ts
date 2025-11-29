@@ -37,9 +37,6 @@ export class MemberResponseDto {
   }
 
   static from(member: Member): MemberResponseDto {
-    return new MemberResponseDto({
-      ...member,
-      id: String(member.id),
-    });
+    return new MemberResponseDto(member);
   }
 }

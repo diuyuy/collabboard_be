@@ -21,7 +21,7 @@ export class MemberService {
     return `This action returns all member`;
   }
 
-  async findById(id: bigint): Promise<MemberResponseDto | null> {
+  async findById(id: string): Promise<MemberResponseDto | null> {
     const member = await this.prismaService.member.findUnique({
       where: {
         id,

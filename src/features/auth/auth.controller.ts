@@ -28,7 +28,7 @@ import { MemberResponseDto } from '../member/dto/member-response.dto';
 import { AuthService } from './auth.service';
 import { IsPublic } from './decorator/public';
 import { PasswdResetRequestDto } from './dto/passwd-reset-request.dto';
-import { SendVerifycationCodeRequestDto } from './dto/send-auth-code-request.dto';
+import { SendVerificationCodeRequestDto } from './dto/send-auth-code-request.dto';
 import { SendResetPasswdRequestDto } from './dto/send-reset-passwd-request.dto';
 import { SignUpRequestDto } from './dto/sign-up-request.dto';
 import { LocalAuthGuard } from './guard/local-auth.guard';
@@ -92,7 +92,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<MemberResponseDto>> {
     const { accessToken, refreshToken, memberResponseDto } =
-      await this.authService.signInByEmailPassword(BigInt(req.user.id));
+      await this.authService.signInByEmailPassword(req.user.id);
 
     this.cookieService.setCookie(res, accessToken, refreshToken, 'SIGN_IN');
 
@@ -266,10 +266,10 @@ export class AuthController {
     },
   })
   @Post('verification-code')
-  async sendVerifycationCode(
-    @Body() { email }: SendVerifycationCodeRequestDto,
+  async sendVerificationCode(
+    @Body() { email }: SendVerificationCodeRequestDto,
   ): Promise<ApiResponse<void>> {
-    await this.authService.sendVerifycationCodeEmail(email);
+    await this.authService.sendVerificationCodeEmail(email);
 
     return ApiResponse.success();
   }

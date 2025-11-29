@@ -10,6 +10,7 @@ import {
 } from 'src/core/api-response/response-status';
 import { AUTH_ENV } from 'src/core/config/auth-env';
 import { EnvSchema } from 'src/core/config/validateEnv';
+import { EMAIL_CONSTANTS } from 'src/core/constants/email-constants';
 import { CommonHttpException } from 'src/core/exception/common-http-exception';
 import { EmailService } from 'src/core/infrastructure/email/email.service';
 import { IoRedisService } from 'src/core/infrastructure/io-redis/io-redis.service';
@@ -32,7 +33,7 @@ export class AuthService {
 
   private readonly SALT_OR_AROUNDS = 10;
 
-  async signInByEmailPassword(memberId: bigint): Promise<
+  async signInByEmailPassword(memberId: string): Promise<
     AuthTokens & {
       memberResponseDto: MemberResponseDto;
     }
@@ -50,7 +51,7 @@ export class AuthService {
     });
 
     const refreshToken = await this.generateRefreshToken({
-      id: String(memberId),
+      id: memberId,
       role: memberResponseDto.role,
     });
 
@@ -60,10 +61,10 @@ export class AuthService {
   async signUp({
     email,
     password,
-    verifycationCode,
+    verificationCode,
   }: SignUpRequestDto): Promise<void> {
-    await this.validateVerifycationCode(email, verifycationCode);
-    await this.ioRedisService.del(this.generateVerifycationCodeKey(email));
+    await this.validateVerificationCode(email, verificationCode);
+    await this.ioRedisService.del(this.generateVerificationCodeKey(email));
 
     const hashedPassword = await bcrypt.hash(password, this.SALT_OR_AROUNDS);
 
@@ -94,29 +95,29 @@ export class AuthService {
     return (await bcrypt.compare(password, member.password)) ? member : null;
   }
 
-  async sendVerifycationCodeEmail(email: string): Promise<void> {
-    const isEmailExsits = await this.checkEmailExists(email);
+  async sendVerificationCodeEmail(email: string): Promise<void> {
+    const isEmailExists = await this.checkEmailExists(email);
 
-    if (isEmailExsits)
+    if (isEmailExists)
       throw new CommonHttpException(
         ResponseStatusFactory.create(ResponseCode.EMAIL_ALREADY_EXSITS),
       );
 
-    const verifycationCode = randomInt(1000000).toString().padStart(6, '0');
+    const verificationCode = randomInt(1000000).toString().padStart(6, '0');
 
     try {
       await this.ioRedisService.set(
-        this.generateVerifycationCodeKey(email),
-        verifycationCode,
+        this.generateVerificationCodeKey(email),
+        verificationCode,
         'EX',
-        3 * 60 + 30, // +30 이메일 전송 시간 고려
+        EMAIL_CONSTANTS.VERIFICATION_CODE_TTLSECONDS,
       );
     } catch {
       throw new CommonHttpException(
         ResponseStatusFactory.create(ResponseCode.SEND_EMAIL_FAIL),
       );
     }
-    await this.emailService.sendVerifycationCodeEmail(email, verifycationCode);
+    await this.emailService.sendVerificationCodeEmail(email, verificationCode);
   }
 
   async checkEmailExists(email: string): Promise<boolean> {
@@ -182,14 +183,14 @@ export class AuthService {
         this.generateAuthTokenKey(authToken),
         email,
         'EX',
-        10 * 60 + 30, // +30: 이메일 전송 시간 고려
+        EMAIL_CONSTANTS.AUTH_TOKEN_TTLSECONDS,
       );
-      await this.emailService.sendResetPasswordEmail(email, authToken);
     } catch {
       throw new CommonHttpException(
         ResponseStatusFactory.create(ResponseCode.SEND_EMAIL_FAIL),
       );
     }
+    await this.emailService.sendResetPasswordEmail(email, authToken);
   }
 
   async resetPassword({
@@ -218,17 +219,17 @@ export class AuthService {
     await this.memberService.updatePassword(email, hashResult.value);
   }
 
-  private async validateVerifycationCode(
+  private async validateVerificationCode(
     email: string,
-    verifycationCode: string,
+    verificationCode: string,
   ) {
-    const storedVerifycationCode = await this.ioRedisService.get(
-      this.generateVerifycationCodeKey(email),
+    const storedVerificationCode = await this.ioRedisService.get(
+      this.generateVerificationCodeKey(email),
     );
 
     if (
-      !storedVerifycationCode ||
-      storedVerifycationCode !== verifycationCode
+      !storedVerificationCode ||
+      storedVerificationCode !== verificationCode
     ) {
       throw new CommonHttpException(
         ResponseStatusFactory.create(ResponseCode.INVALID_VERIFYCATION_CODE),
@@ -267,7 +268,7 @@ export class AuthService {
     return refreshToken;
   }
 
-  private generateVerifycationCodeKey(email: string): string {
+  private generateVerificationCodeKey(email: string): string {
     return `AUTH_CODE:${email}`;
   }
 

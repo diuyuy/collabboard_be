@@ -16,6 +16,7 @@ export enum ResponseCode {
   REFRESH_TOKEN_NOT_EXISTS = 'REFRESH_TOKEN_NOT_EXISTS',
   INVALID_EMAIL_FORM = 'INVALID_EMAIL_FORM',
   EMAIL_ALREADY_EXSITS = 'EMAIL_ALREADY_EXSITS',
+  INVALID_ID_TYPE = 'INVALID_ID_TYPE',
 
   //401 Unauthorized
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -25,11 +26,13 @@ export enum ResponseCode {
 
   // 403 Forbidden
   FORBIDDEN = 'FORBIDDEN',
+  WORKSPACE_ACCESS_DENIED = 'WORKSPACE_ACCESS_DENIED',
 
   // 404 Not Found
   NOT_FOUND = 'NOT_FOUND',
   MEMBER_NOT_FOUND = 'MEMBER_NOT_FOUND',
   EMAIL_NOT_FOUND = 'EMAIL_NOT_FOUND',
+  WORKSPACE_NOT_FOUND = 'WORKSPACE_NOT_FOUND',
 
   // 500 Internal Server Error
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
@@ -123,6 +126,13 @@ export class ResponseStatusFactory {
       message: '이미 존재하는 이메일입니다.',
     },
 
+    [ResponseCode.INVALID_ID_TYPE]: {
+      success: false,
+      code: ResponseCode.INVALID_ID_TYPE,
+      status: HttpStatus.BAD_REQUEST,
+      message: '유효하지 않은 ID 타입 입니다.',
+    },
+
     // 401
     [ResponseCode.UNAUTHORIZED]: {
       success: false,
@@ -160,6 +170,13 @@ export class ResponseStatusFactory {
       message: '접근 권한이 없습니다.',
     },
 
+    [ResponseCode.WORKSPACE_ACCESS_DENIED]: {
+      success: false,
+      code: ResponseCode.WORKSPACE_ACCESS_DENIED,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 워크스페이스에 대한 접근 권한이 없습니다.',
+    },
+
     // 404
     [ResponseCode.NOT_FOUND]: {
       success: false,
@@ -180,6 +197,13 @@ export class ResponseStatusFactory {
       code: ResponseCode.EMAIL_NOT_FOUND,
       status: HttpStatus.NOT_FOUND,
       message: '해당 사용자를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.WORKSPACE_NOT_FOUND]: {
+      success: false,
+      code: ResponseCode.WORKSPACE_NOT_FOUND,
+      status: HttpStatus.NOT_FOUND,
+      message: '해당 워크스페이스를 찾을 수 없습니다.',
     },
 
     // 500
