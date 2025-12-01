@@ -269,7 +269,7 @@ export class AuthService {
   }
 
   private generateVerificationCodeKey(email: string): string {
-    return `AUTH_CODE:${email}`;
+    return `VERIFICATION_CODE:${email}`;
   }
 
   private generateAuthTokenKey(authToken: string): string {

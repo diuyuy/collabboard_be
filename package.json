@@ -92,6 +92,13 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1",
+      "^generated/prisma/(.*)$": "<rootDir>/../generated/prisma/$1"
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!uuid)"
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],

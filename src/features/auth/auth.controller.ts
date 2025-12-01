@@ -236,7 +236,7 @@ export class AuthController {
   ): Promise<ApiResponse<boolean>> {
     const isExists = await this.authService.checkEmailExists(email);
 
-    return ApiResponse.success(isExists);
+    return ApiResponse.success(!isExists);
   }
 
   @ApiOperation({ summary: 'Send Email Verification Code' })
