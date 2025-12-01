@@ -8,7 +8,7 @@ import {
 } from 'src/core/api-response/response-status';
 import { PASSPORT_STRATEGY_NAME } from 'src/core/constants/passport-strategy-name';
 import { CommonHttpException } from 'src/core/exception/common-http-exception';
-import { IsPublic } from '../decorator/public';
+import { IS_PUBLIC } from '../decorator/public';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard(PASSPORT_STRATEGY_NAME.JWT) {
@@ -19,8 +19,12 @@ export class JwtAuthGuard extends AuthGuard(PASSPORT_STRATEGY_NAME.JWT) {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
+    const requestType = context.getType();
+
+    if (requestType === 'ws') return true; // websocket 인증은 게이트웨이에서 처리
+
     const isPublic = this.reflector.getAllAndOverride<boolean | undefined>(
-      IsPublic,
+      IS_PUBLIC,
       [context.getClass(), context.getHandler()],
     );
 

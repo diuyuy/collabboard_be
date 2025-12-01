@@ -1,7 +1,9 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { ApiResponse } from './core/api-response/api-response';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,8 +22,24 @@ async function bootstrap() {
       origin: process.env.CORS_ORIGIN,
       credentials: true,
     });
+
+    const config = new DocumentBuilder()
+      .setTitle('Collabboard API Documentation')
+      .setDescription('The Collabboard API description')
+      .setVersion('1.0')
+      .addTag('Collabboard')
+      .build();
+
+    const documentFactory = () =>
+      SwaggerModule.createDocument(app, config, {
+        extraModels: [ApiResponse],
+      });
+
+    SwaggerModule.setup('api/swagger', app, documentFactory, {
+      jsonDocumentUrl: 'api/swagger/json',
+    });
   }
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 8080);
 }
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

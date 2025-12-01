@@ -28,7 +28,12 @@ export class CacheService {
       this.logger.debug(`Cache miss: ${cacheKey}`);
       const data = await fetchFn();
 
-      await this.ioRedisService.set(cacheKey, this.stringify(data), ttlSeconds);
+      await this.ioRedisService.set(
+        cacheKey,
+        this.stringify(data),
+        'EX',
+        ttlSeconds,
+      );
       this.logger.debug(`Cache set: ${cacheKey} with TTL ${ttlSeconds}s`);
 
       return data;

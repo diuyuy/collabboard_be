@@ -4,3 +4,5 @@ export type Pageable<T> = {
   sortProp: T;
   sortDirection: 'asc' | 'desc';
 };
+
+export type WorkspaceSortOption = 'id' | 'name';

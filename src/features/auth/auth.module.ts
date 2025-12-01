@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AUTH_ENV } from 'src/core/config/auth-env';
 import { EnvSchema } from 'src/core/config/validateEnv';
 import { CookieModule } from 'src/core/infrastructure/cookie/cookie.module';
+import { EmailModule } from 'src/core/infrastructure/email/email.module';
 import { MemberModule } from '../member/member.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -16,6 +17,7 @@ import { LocalStrategy } from './strategy/local-strategy';
 @Module({
   imports: [
     CookieModule,
+    EmailModule,
     MemberModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService<EnvSchema, true>) => ({
