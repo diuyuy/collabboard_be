@@ -9,6 +9,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiResponse } from 'src/core/api-response/api-response';
+import { PageResponse } from 'src/core/api-response/page-response';
 import {
   ResponseCode,
   ResponseStatusFactory,
@@ -41,7 +42,9 @@ export class WorkspaceController {
   }
 
   @Get()
-  findAll(@Req() req: RequestWithUser) {
+  async findAll(
+    @Req() req: RequestWithUser,
+  ): Promise<ApiResponse<PageResponse<WorkspaceResponseDto>>> {
     const memberId = req.user.id;
     const pageable = {
       page: 0,
@@ -50,28 +53,46 @@ export class WorkspaceController {
       sortDirection: 'desc' as const,
     };
 
-    return this.workspaceService.findAll(memberId, pageable);
+    const workspacePage = await this.workspaceService.findAll(
+      memberId,
+      pageable,
+    );
+
+    return ApiResponse.success(workspacePage);
   }
 
   @Get(':id')
-  findOne(@Req() req: RequestWithUser, @Param('id') id: string) {
-    const memberId = req.user.id;
-    return this.workspaceService.findOne(memberId, id);
+  async findOne(
+    @Req() req: RequestWithUser,
+    @Param('id') id: string,
+  ): Promise<ApiResponse<WorkspaceResponseDto>> {
+    const workspace = await this.workspaceService.findOne(req.user.id, id);
+
+    return ApiResponse.success(workspace);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Req() req: RequestWithUser,
     @Param('id') id: string,
     @Body() updateWorkspaceDto: UpdateWorkspaceDto,
-  ) {
-    const memberId = req.user.id;
-    return this.workspaceService.update(memberId, id, updateWorkspaceDto);
+  ): Promise<ApiResponse<WorkspaceResponseDto>> {
+    const updatedWorkspace = await this.workspaceService.update(
+      req.user.id,
+      id,
+      updateWorkspaceDto,
+    );
+
+    return ApiResponse.success(updatedWorkspace);
   }
 
   @Delete(':id')
-  remove(@Req() req: RequestWithUser, @Param('id') id: string) {
-    const memberId = req.user.id;
-    return this.workspaceService.remove(id, memberId);
+  async remove(
+    @Req() req: RequestWithUser,
+    @Param('id') workspaceId: string,
+  ): Promise<ApiResponse<void>> {
+    await this.workspaceService.remove(req.user.id, workspaceId);
+
+    return ApiResponse.success();
   }
 }

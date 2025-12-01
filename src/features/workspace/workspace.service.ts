@@ -83,7 +83,7 @@ export class WorkspaceService {
     return WorkspaceResponseDto.from(workspace);
   }
 
-  async remove(workspaceId: string, memberId: string): Promise<void> {
+  async remove(memberId: string, workspaceId: string): Promise<void> {
     await this.validateWorkspaceAccess(workspaceId, memberId);
     await this.prismaService.workspace.delete({
       where: {

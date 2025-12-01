@@ -1,11 +1,47 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Pageable } from '../types/types';
 
 export class PageResponse<T> {
+  @ApiProperty({
+    description: 'Array of items for the current page',
+    type: 'array',
+    isArray: true,
+  })
   items: T[];
+
+  @ApiProperty({
+    description: 'Current page number (0-indexed)',
+    example: 0,
+    type: Number,
+  })
   page: number;
+
+  @ApiProperty({
+    description: 'Number of items per page',
+    example: 10,
+    type: Number,
+  })
   size: number;
+
+  @ApiProperty({
+    description: 'Indicates whether there are more pages available',
+    example: true,
+    type: Boolean,
+  })
   hasNext: boolean;
+
+  @ApiProperty({
+    description: 'Total number of elements across all pages',
+    example: 100,
+    type: Number,
+  })
   totalElements: number;
+
+  @ApiProperty({
+    description: 'Total number of pages',
+    example: 10,
+    type: Number,
+  })
   totalPages: number;
 
   constructor(pageResponse: PageResponse<T>) {
