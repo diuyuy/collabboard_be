@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiResponse } from 'src/core/api-response/api-response';
 import { PageResponse } from 'src/core/api-response/page-response';
@@ -15,14 +16,20 @@ import {
   ResponseStatusFactory,
 } from 'src/core/api-response/response-status';
 import { RequestWithUser } from 'src/features/auth/types/types';
+import { AddWorkspaceMemberDto } from './dto/add-workspace-member.dto';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { WorkspaceResponseDto } from './dto/workspace-response.dto';
+import { WorkspaceMemberRoleGuard } from './guards/workspace-member-role.guard';
+import { WorkspaceMemberService } from './workspace-member.service';
 import { WorkspaceService } from './workspace.service';
 
 @Controller('v1/workspaces')
 export class WorkspaceController {
-  constructor(private readonly workspaceService: WorkspaceService) {}
+  constructor(
+    private readonly workspaceService: WorkspaceService,
+    private readonly workspaceMemberService: WorkspaceMemberService,
+  ) {}
 
   @Post()
   async create(
@@ -61,37 +68,54 @@ export class WorkspaceController {
     return ApiResponse.success(workspacePage);
   }
 
-  @Get(':id')
+  @Get(':workspaceId')
   async findOne(
     @Req() req: RequestWithUser,
-    @Param('id') id: string,
+    @Param('workspaceId') workspaceId: string,
   ): Promise<ApiResponse<WorkspaceResponseDto>> {
-    const workspace = await this.workspaceService.findOne(req.user.id, id);
+    const workspace = await this.workspaceService.findOne(
+      req.user.id,
+      workspaceId,
+    );
 
     return ApiResponse.success(workspace);
   }
 
-  @Patch(':id')
+  @Patch(':workspaceId')
   async update(
     @Req() req: RequestWithUser,
-    @Param('id') id: string,
+    @Param('workspaceId') workspaceId: string,
     @Body() updateWorkspaceDto: UpdateWorkspaceDto,
   ): Promise<ApiResponse<WorkspaceResponseDto>> {
     const updatedWorkspace = await this.workspaceService.update(
       req.user.id,
-      id,
+      workspaceId,
       updateWorkspaceDto,
     );
 
     return ApiResponse.success(updatedWorkspace);
   }
 
-  @Delete(':id')
+  @Delete(':workspaceId')
   async remove(
     @Req() req: RequestWithUser,
-    @Param('id') workspaceId: string,
+    @Param('workspaceId') workspaceId: string,
   ): Promise<ApiResponse<void>> {
     await this.workspaceService.remove(req.user.id, workspaceId);
+
+    return ApiResponse.success();
+  }
+
+  @UseGuards(WorkspaceMemberRoleGuard)
+  @Post(':workspaceId/invites')
+  async inviteMembers(
+    @Param('workspaceId') workspaceId: string,
+    @Body() addWorkspaceMemberDto: AddWorkspaceMemberDto,
+  ): Promise<ApiResponse<void>> {
+    await this.workspaceMemberService.addMembers(
+      workspaceId,
+      addWorkspaceMemberDto,
+    );
 
     return ApiResponse.success();
   }

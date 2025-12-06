@@ -4,173 +4,178 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
 }
 
 model Board {
-  id              String    @id @default(cuid())
-  title           String    @db.VarChar(100)
-  description     String?   @db.Text
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title           String
+  description     String?
   backgroundColor String    @db.VarChar(7)
-  workspaceId     String
-  ownerId         String?
-  createdAt       DateTime  @default(now()) @db.DateTime(0)
-  updatedAt       DateTime  @updatedAt @db.DateTime(0)
-  Workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade, map: "Board_ibfk_1")
-  Member          Member?   @relation(fields: [ownerId], references: [id], map: "Board_ibfk_2")
+  workspaceId     String    @db.Uuid
+  ownerId         String?   @db.Uuid
+  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @db.Timestamptz(6)
+  Member          Member?   @relation(fields: [ownerId], references: [id])
+  Workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   Label           Label[]
   List            List[]
-
-  @@index([ownerId], map: "ownerId")
-  @@index([workspaceId], map: "workspaceId")
 }
 
 model Card {
-  id           String         @id @default(cuid())
-  title        String         @db.VarChar(100)
-  description  String?        @db.Text
-  listId       String?
-  position     String         @db.VarChar(255)
-  priority     Card_priority
-  status       Card_status    @default(UNKNOWN)
-  createdAt    DateTime       @default(now()) @db.DateTime(0)
-  updatedAt    DateTime       @updatedAt @db.DateTime(0)
-  List         List?          @relation(fields: [listId], references: [id], onDelete: Cascade, map: "Card_ibfk_1")
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String
+  description  String?
+  listId       String?        @db.Uuid
+  position     String
+  priority     CardPriority
+  status       CardStatus     @default(UNKNOWN)
+  createdAt    DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime       @default(now()) @db.Timestamptz(6)
+  List         List?          @relation(fields: [listId], references: [id], onDelete: Cascade)
   CardAssignee CardAssignee[]
   CardLabel    CardLabel[]
   Comment      Comment[]
-
-  @@index([listId], map: "listId")
 }
 
 model CardAssignee {
-  id        String   @id @default(cuid())
-  cardId    String
-  memberId  String
-  createdAt DateTime @default(now()) @db.DateTime(0)
-  Card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade, map: "CardAssignee_ibfk_1")
-  Member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade, map: "CardAssignee_ibfk_2")
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cardId    String   @db.Uuid
+  memberId  String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  Card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  Member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
-  @@unique([memberId, cardId], map: "idx_member_card")
-  @@index([cardId], map: "cardId")
+  @@unique([memberId, cardId], map: "idx_card_assignee_unique")
 }
 
 model CardLabel {
-  id      String @id @default(cuid())
-  cardId  String
-  labelId String
-  Card    Card   @relation(fields: [cardId], references: [id], onDelete: Cascade, map: "CardLabel_ibfk_1")
-  Label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade, map: "CardLabel_ibfk_2")
+  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cardId  String @db.Uuid
+  labelId String @db.Uuid
+  Card    Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  Label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
 
-  @@unique([labelId, cardId], map: "idx_label_card")
-  @@index([cardId], map: "cardId")
+  @@unique([labelId, cardId], map: "idx_card_label_unique")
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  memberId  String?
-  cardId    String?
-  content   String   @db.Text
-  createdAt DateTime @default(now()) @db.DateTime(0)
-  updatedAt DateTime @updatedAt @db.DateTime(0)
-  Member    Member?  @relation(fields: [memberId], references: [id], map: "Comment_ibfk_1")
-  Card      Card?    @relation(fields: [cardId], references: [id], onDelete: Cascade, map: "Comment_ibfk_2")
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId  String?  @db.Uuid
+  cardId    String?  @db.Uuid
+  content   String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @db.Timestamptz(6)
+  Card      Card?    @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  Member    Member?  @relation(fields: [memberId], references: [id])
+}
 
-  @@index([cardId], map: "cardId")
-  @@index([memberId], map: "memberId")
+model Invitation {
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId  String           @db.Uuid
+  inviteeEmail String
+  inviterId    String           @db.Uuid
+  status       InvitationStatus @default(PENDING)
+  createdAt    DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime         @default(now()) @db.Timestamptz(6)
+  Member       Member           @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  Workspace    Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 model Label {
-  id        String      @id @default(cuid())
-  title     String      @db.VarChar(100)
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String
   color     String      @db.VarChar(7)
-  boardId   String
-  createdAt DateTime    @default(now()) @db.DateTime(0)
-  updatedAt DateTime    @updatedAt @db.DateTime(0)
+  boardId   String      @db.Uuid
+  createdAt DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime    @default(now()) @db.Timestamptz(6)
   CardLabel CardLabel[]
-  Board     Board       @relation(fields: [boardId], references: [id], onDelete: Cascade, map: "Label_ibfk_1")
-
-  @@index([boardId], map: "boardId")
+  Board     Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
 }
 
 model List {
-  id        String   @id @default(cuid())
-  boardId   String
-  title     String   @db.VarChar(255)
-  position  String   @db.VarChar(255)
-  createdAt DateTime @default(now()) @db.DateTime(0)
-  updatedAt DateTime @updatedAt @db.DateTime(0)
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId   String   @db.Uuid
+  title     String
+  position  String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @db.Timestamptz(6)
   Card      Card[]
-  Board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade, map: "List_ibfk_1")
-
-  @@index([boardId], map: "boardId")
+  Board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
 }
 
 model Member {
-  id              String            @id @default(cuid())
-  email           String            @unique(map: "email") @db.VarChar(255)
-  password        String?           @db.VarChar(60)
-  nickname        String?           @unique(map: "nickname") @db.VarChar(50)
-  role            Member_role       @default(USER)
-  createdAt       DateTime          @default(now()) @db.DateTime(0)
-  updatedAt       DateTime          @updatedAt @db.DateTime(0)
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String            @unique
+  password        String?
+  nickname        String?           @unique
+  role            MemberRole        @default(USER)
+  createdAt       DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime          @default(now()) @db.Timestamptz(6)
   Board           Board[]
   CardAssignee    CardAssignee[]
   Comment         Comment[]
+  Invitation      Invitation[]
   Workspace       Workspace[]
   WorkspaceMember WorkspaceMember[]
 }
 
 model Workspace {
-  id              String            @id @default(cuid())
-  name            String            @db.VarChar(255)
-  ownerId         String
-  description     String?           @db.Text
-  createdAt       DateTime          @default(now()) @db.DateTime(0)
-  updatedAt       DateTime          @updatedAt @db.DateTime(0)
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  ownerId         String            @db.Uuid
+  description     String?
+  createdAt       DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime          @default(now()) @db.Timestamptz(6)
   Board           Board[]
-  Member          Member            @relation(fields: [ownerId], references: [id], onDelete: Cascade, map: "Workspace_ibfk_1")
+  Invitation      Invitation[]
+  Member          Member            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   WorkspaceMember WorkspaceMember[]
 
-  @@unique([ownerId, name], map: "idx_member_name")
+  @@unique([ownerId, name], map: "idx_workspace_owner_name")
 }
 
 model WorkspaceMember {
-  id          String               @id @default(cuid())
-  workspaceId String
-  memberId    String
-  role        WorkspaceMember_role
-  joinAt      DateTime             @default(now()) @db.DateTime(0)
-  createdAt   DateTime             @default(now()) @db.DateTime(0)
-  updatedAt   DateTime             @updatedAt @db.DateTime(0)
-  Workspace   Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade, map: "WorkspaceMember_ibfk_1")
-  Member      Member               @relation(fields: [memberId], references: [id], onDelete: Cascade, map: "WorkspaceMember_ibfk_2")
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId String        @db.Uuid
+  memberId    String        @db.Uuid
+  role        WorkspaceRole
+  joinAt      DateTime      @default(now()) @db.Timestamptz(6)
+  createdAt   DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime      @default(now()) @db.Timestamptz(6)
+  Member      Member        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  Workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@unique([workspaceId, memberId], map: "idx_member_workspace")
-  @@index([memberId], map: "memberId")
+  @@unique([workspaceId, memberId], map: "idx_workspace_member_unique")
 }
 
-enum WorkspaceMember_role {
-  OWNER
-  ADMIN
-  MEMBER
-  VIEWER
-}
-
-enum Member_role {
-  USER
-  ADMIN
-}
-
-enum Card_priority {
+enum CardPriority {
   HIGH
   MEDIUM
   LOW
 }
 
-enum Card_status {
+enum CardStatus {
   TODO
   IN_PROGRESS
   DONE
   UNKNOWN
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum MemberRole {
+  USER
+  ADMIN
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
 }

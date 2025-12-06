@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
-import { Member_role } from 'generated/prisma/enums';
+import { MemberRole } from 'generated/prisma/enums';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AUTH_ENV } from 'src/core/config/auth-env';
 import { EnvSchema } from 'src/core/config/validateEnv';
@@ -11,7 +11,7 @@ import { MemberInfo } from '../types/types';
 
 type Payload = {
   sub: string;
-  role: Member_role;
+  role: MemberRole;
 };
 
 @Injectable()

@@ -1,180 +1,219 @@
--- CreateTable
-CREATE TABLE `Board` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `title` VARCHAR(100) NOT NULL,
-    `description` TEXT NULL,
-    `backgroundColor` VARCHAR(7) NOT NULL,
-    `workspaceId` BIGINT NOT NULL,
-    `ownerId` BIGINT NULL,
-    `createdAt` DATETIME(0) NOT NULL DEFAULT (now()),
-    `updatedAt` DATETIME(0) NOT NULL DEFAULT (now()),
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
 
-    INDEX `ownerId`(`ownerId`),
-    INDEX `workspaceId`(`workspaceId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- CreateEnum
+CREATE TYPE "CardPriority" AS ENUM ('HIGH', 'MEDIUM', 'LOW');
 
--- CreateTable
-CREATE TABLE `Card` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `title` VARCHAR(100) NOT NULL,
-    `description` TEXT NULL,
-    `listId` BIGINT NULL,
-    `position` VARCHAR(255) NOT NULL,
-    `priority` ENUM('HIGH', 'MEDIUM', 'LOW') NOT NULL,
-    `status` ENUM('TODO', 'IN_PROGRESS', 'DONE', 'UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
-    `createdAt` DATETIME(0) NOT NULL DEFAULT (now()),
-    `updatedAt` DATETIME(0) NOT NULL DEFAULT (now()),
+-- CreateEnum
+CREATE TYPE "CardStatus" AS ENUM ('TODO', 'IN_PROGRESS', 'DONE', 'UNKNOWN');
 
-    INDEX `listId`(`listId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- CreateEnum
+CREATE TYPE "InvitationStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED');
+
+-- CreateEnum
+CREATE TYPE "MemberRole" AS ENUM ('USER', 'ADMIN');
+
+-- CreateEnum
+CREATE TYPE "WorkspaceRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER', 'VIEWER');
 
 -- CreateTable
-CREATE TABLE `CardAssignee` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `cardId` BIGINT NOT NULL,
-    `memberId` BIGINT NOT NULL,
-    `createdAt` DATETIME(0) NOT NULL DEFAULT (now()),
+CREATE TABLE "Board" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "backgroundColor" VARCHAR(7) NOT NULL,
+    "workspaceId" UUID NOT NULL,
+    "ownerId" UUID,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    INDEX `cardId`(`cardId`),
-    UNIQUE INDEX `idx_member_card`(`memberId`, `cardId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `CardLabel` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `cardId` BIGINT NOT NULL,
-    `labelId` BIGINT NOT NULL,
-
-    INDEX `cardId`(`cardId`),
-    UNIQUE INDEX `idx_label_card`(`labelId`, `cardId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "Board_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `Comment` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `memberId` BIGINT NULL,
-    `cardId` BIGINT NULL,
-    `content` TEXT NOT NULL,
-    `createdAt` DATETIME(0) NOT NULL DEFAULT (now()),
-    `updatedAt` DATETIME(0) NOT NULL DEFAULT (now()),
+CREATE TABLE "Card" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "listId" UUID,
+    "position" TEXT NOT NULL,
+    "priority" "CardPriority" NOT NULL,
+    "status" "CardStatus" NOT NULL DEFAULT 'UNKNOWN',
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    INDEX `cardId`(`cardId`),
-    INDEX `memberId`(`memberId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `Label` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `title` VARCHAR(100) NOT NULL,
-    `color` VARCHAR(7) NOT NULL,
-    `boardId` BIGINT NOT NULL,
-    `createdAt` DATETIME(0) NOT NULL DEFAULT (now()),
-    `updatedAt` DATETIME(0) NOT NULL DEFAULT (now()),
-
-    INDEX `boardId`(`boardId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "Card_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `List` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `boardId` BIGINT NOT NULL,
-    `title` VARCHAR(255) NOT NULL,
-    `position` VARCHAR(255) NOT NULL,
-    `createdAt` DATETIME(0) NOT NULL DEFAULT (now()),
-    `updatedAt` DATETIME(0) NOT NULL DEFAULT (now()),
+CREATE TABLE "CardAssignee" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "cardId" UUID NOT NULL,
+    "memberId" UUID NOT NULL,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    INDEX `boardId`(`boardId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "CardAssignee_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `Member` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `email` VARCHAR(255) NOT NULL,
-    `password` VARCHAR(60) NULL,
-    `nickname` VARCHAR(50) NULL,
-    `role` ENUM('USER', 'ADMIN') NULL DEFAULT 'USER',
-    `createdAt` DATETIME(0) NOT NULL DEFAULT (now()),
-    `updatedAt` DATETIME(0) NOT NULL DEFAULT (now()),
+CREATE TABLE "CardLabel" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "cardId" UUID NOT NULL,
+    "labelId" UUID NOT NULL,
 
-    UNIQUE INDEX `email`(`email`),
-    UNIQUE INDEX `nickname`(`nickname`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "CardLabel_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `Workspace` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(255) NOT NULL,
-    `ownerId` BIGINT NOT NULL,
-    `description` TEXT NULL,
-    `createdAt` DATETIME(0) NOT NULL DEFAULT (now()),
-    `updatedAt` DATETIME(0) NOT NULL DEFAULT (now()),
+CREATE TABLE "Comment" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "memberId" UUID,
+    "cardId" UUID,
+    "content" TEXT NOT NULL,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    UNIQUE INDEX `idx_member_name`(`ownerId`, `name`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `WorkspaceMember` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `workspaceId` BIGINT NOT NULL,
-    `memberId` BIGINT NOT NULL,
-    `role` ENUM('OWNER', 'ADMIN', 'MEMBER', 'VIEWER') NOT NULL,
-    `joinAt` DATETIME(0) NOT NULL DEFAULT (now()),
-    `createdAt` DATETIME(0) NOT NULL DEFAULT (now()),
-    `updatedAt` DATETIME(0) NOT NULL DEFAULT (now()),
+CREATE TABLE "Invitation" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "workspaceId" UUID NOT NULL,
+    "inviteeEmail" TEXT NOT NULL,
+    "inviterId" UUID NOT NULL,
+    "status" "InvitationStatus" NOT NULL DEFAULT 'PENDING',
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    INDEX `memberId`(`memberId`),
-    UNIQUE INDEX `idx_member_workspace`(`workspaceId`, `memberId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "Invitation_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Label" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "title" TEXT NOT NULL,
+    "color" VARCHAR(7) NOT NULL,
+    "boardId" UUID NOT NULL,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Label_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "List" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "boardId" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "position" TEXT NOT NULL,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "List_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Member" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "email" TEXT NOT NULL,
+    "password" TEXT,
+    "nickname" TEXT,
+    "role" "MemberRole" NOT NULL DEFAULT 'USER',
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Member_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Workspace" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "name" TEXT NOT NULL,
+    "ownerId" UUID NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Workspace_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "WorkspaceMember" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "workspaceId" UUID NOT NULL,
+    "memberId" UUID NOT NULL,
+    "role" "WorkspaceRole" NOT NULL,
+    "joinAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "WorkspaceMember_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "idx_card_assignee_unique" ON "CardAssignee"("memberId", "cardId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "idx_card_label_unique" ON "CardLabel"("labelId", "cardId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Member_email_key" ON "Member"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Member_nickname_key" ON "Member"("nickname");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "idx_workspace_owner_name" ON "Workspace"("ownerId", "name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "idx_workspace_member_unique" ON "WorkspaceMember"("workspaceId", "memberId");
 
 -- AddForeignKey
-ALTER TABLE `Board` ADD CONSTRAINT `Board_ibfk_1` FOREIGN KEY (`workspaceId`) REFERENCES `Workspace`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Board" ADD CONSTRAINT "Board_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "Member"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Board` ADD CONSTRAINT `Board_ibfk_2` FOREIGN KEY (`ownerId`) REFERENCES `Member`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Board" ADD CONSTRAINT "Board_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Card` ADD CONSTRAINT `Card_ibfk_1` FOREIGN KEY (`listId`) REFERENCES `List`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Card" ADD CONSTRAINT "Card_listId_fkey" FOREIGN KEY ("listId") REFERENCES "List"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `CardAssignee` ADD CONSTRAINT `CardAssignee_ibfk_1` FOREIGN KEY (`cardId`) REFERENCES `Card`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "CardAssignee" ADD CONSTRAINT "CardAssignee_cardId_fkey" FOREIGN KEY ("cardId") REFERENCES "Card"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `CardAssignee` ADD CONSTRAINT `CardAssignee_ibfk_2` FOREIGN KEY (`memberId`) REFERENCES `Member`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "CardAssignee" ADD CONSTRAINT "CardAssignee_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `CardLabel` ADD CONSTRAINT `CardLabel_ibfk_1` FOREIGN KEY (`cardId`) REFERENCES `Card`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "CardLabel" ADD CONSTRAINT "CardLabel_cardId_fkey" FOREIGN KEY ("cardId") REFERENCES "Card"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `CardLabel` ADD CONSTRAINT `CardLabel_ibfk_2` FOREIGN KEY (`labelId`) REFERENCES `Label`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "CardLabel" ADD CONSTRAINT "CardLabel_labelId_fkey" FOREIGN KEY ("labelId") REFERENCES "Label"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Comment` ADD CONSTRAINT `Comment_ibfk_1` FOREIGN KEY (`memberId`) REFERENCES `Member`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_cardId_fkey" FOREIGN KEY ("cardId") REFERENCES "Card"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Comment` ADD CONSTRAINT `Comment_ibfk_2` FOREIGN KEY (`cardId`) REFERENCES `Card`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Label` ADD CONSTRAINT `Label_ibfk_1` FOREIGN KEY (`boardId`) REFERENCES `Board`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Invitation" ADD CONSTRAINT "Invitation_inviterId_fkey" FOREIGN KEY ("inviterId") REFERENCES "Member"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `List` ADD CONSTRAINT `List_ibfk_1` FOREIGN KEY (`boardId`) REFERENCES `Board`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Invitation" ADD CONSTRAINT "Invitation_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Workspace` ADD CONSTRAINT `Workspace_ibfk_1` FOREIGN KEY (`ownerId`) REFERENCES `Member`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Label" ADD CONSTRAINT "Label_boardId_fkey" FOREIGN KEY ("boardId") REFERENCES "Board"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `WorkspaceMember` ADD CONSTRAINT `WorkspaceMember_ibfk_1` FOREIGN KEY (`workspaceId`) REFERENCES `Workspace`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "List" ADD CONSTRAINT "List_boardId_fkey" FOREIGN KEY ("boardId") REFERENCES "Board"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `WorkspaceMember` ADD CONSTRAINT `WorkspaceMember_ibfk_2` FOREIGN KEY (`memberId`) REFERENCES `Member`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Workspace" ADD CONSTRAINT "Workspace_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "Member"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "WorkspaceMember" ADD CONSTRAINT "WorkspaceMember_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "WorkspaceMember" ADD CONSTRAINT "WorkspaceMember_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "Workspace"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
