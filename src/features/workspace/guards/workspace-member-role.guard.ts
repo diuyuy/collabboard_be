@@ -10,7 +10,7 @@ export class WorkspaceMemberRoleGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<RequestWithUser>();
-    const workspaceId = context.getArgByIndex<string>(0);
+    const workspaceId = request.params.workspaceId;
 
     const memberRole =
       await this.workspaceMemberService.getRoleByMemberAndWorkspaceId(

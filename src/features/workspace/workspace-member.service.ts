@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { WorkspaceRole } from 'generated/prisma/enums';
+import {
+  ResponseCode,
+  ResponseStatusFactory,
+} from 'src/core/api-response/response-status';
+import { CommonHttpException } from 'src/core/exception/common-http-exception';
 import { PrismaService } from 'src/core/infrastructure/prisma-module/prisma.service';
 import { AddWorkspaceMemberDto } from './dto/add-workspace-member.dto';
-import { UpdateWorkspaceMemberDto } from './dto/update-workspace-member.dto';
+import { WorkspaceMemberResponseDto } from './dto/workspace-member-response.dto';
 
 @Injectable()
 export class WorkspaceMemberService {
@@ -21,24 +26,122 @@ export class WorkspaceMemberService {
     });
   }
 
+  async findAllMembers(
+    workspaceId: string,
+  ): Promise<WorkspaceMemberResponseDto[]> {
+    const workspaceMembers = await this.prismaService.workspaceMember.findMany({
+      where: {
+        workspaceId,
+      },
+      include: {
+        Member: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
+      },
+      orderBy: {
+        joinAt: 'asc',
+      },
+    });
+
+    return workspaceMembers.map((wm) =>
+      WorkspaceMemberResponseDto.from(
+        wm.Member.id,
+        wm.Member.nickname,
+        wm.role,
+        wm.joinAt,
+      ),
+    );
+  }
+
   async updateWorkspaceMemberRole(
     workspaceId: string,
-    updateWorkspaceMemberDto: UpdateWorkspaceMemberDto,
-  ): Promise<void> {
-    await this.prismaService.workspaceMember.update({
+    memberId: string,
+    role: WorkspaceRole,
+  ): Promise<WorkspaceMemberResponseDto> {
+    // Check if member exists in workspace
+    const existingMember = await this.prismaService.workspaceMember.findUnique({
+      where: {
+        workspaceId_memberId: {
+          workspaceId,
+          memberId,
+        },
+      },
+      include: {
+        Member: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
+      },
+    });
+
+    if (!existingMember) {
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.MEMBER_NOT_FOUND),
+      );
+    }
+
+    const updatedMember = await this.prismaService.workspaceMember.update({
       data: {
-        role: updateWorkspaceMemberDto.role,
+        role,
       },
       where: {
         workspaceId_memberId: {
           workspaceId,
-          memberId: updateWorkspaceMemberDto.memberId,
+          memberId,
+        },
+      },
+      include: {
+        Member: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
+      },
+    });
+
+    return WorkspaceMemberResponseDto.from(
+      updatedMember.Member.id,
+      updatedMember.Member.nickname,
+      updatedMember.role,
+      updatedMember.joinAt,
+    );
+  }
+
+  async removeWorkspaceMember(
+    workspaceId: string,
+    memberId: string,
+  ): Promise<void> {
+    // Check if member exists in workspace
+    const existingMember = await this.prismaService.workspaceMember.findUnique({
+      where: {
+        workspaceId_memberId: {
+          workspaceId,
+          memberId,
+        },
+      },
+    });
+
+    if (!existingMember) {
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.MEMBER_NOT_FOUND),
+      );
+    }
+
+    await this.prismaService.workspaceMember.delete({
+      where: {
+        workspaceId_memberId: {
+          workspaceId,
+          memberId,
         },
       },
     });
   }
-
-  async removeWorkspaceMember() {}
 
   async getRoleByMemberAndWorkspaceId(
     memberId: string,

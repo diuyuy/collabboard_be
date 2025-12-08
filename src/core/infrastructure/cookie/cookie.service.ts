@@ -29,7 +29,7 @@ export class CookieService {
       refreshToken,
       setCookieOption === 'SIGN_OUT'
         ? this.getSignOutOptions()
-        : this.getAccessTokenCookieOption(),
+        : this.getRefreshTokenCookieOption(),
     );
   }
 
@@ -56,7 +56,7 @@ export class CookieService {
     const expireDate = new Date();
     expireDate.setDate(
       expireDate.getDate() +
-        this.configService.get<number>(
+        +this.configService.get<string>(
           AUTH_ENV.AUTH_REFRESH_TOKEN_EXPIRATION_DAYS,
         ),
     );

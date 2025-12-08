@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Workspace } from 'generated/prisma/client';
+import { Workspace, WorkspaceRole } from 'generated/prisma/client';
 import { PageResponse } from 'src/core/api-response/page-response';
 import {
   ResponseCode,
@@ -20,10 +20,33 @@ export class WorkspaceService {
     memberId: string,
     createWorkspaceDto: CreateWorkspaceDto,
   ): Promise<WorkspaceResponseDto> {
+    const existingWorkspace = await this.prismaService.workspace.findUnique({
+      select: {
+        id: true,
+      },
+      where: {
+        ownerId_name: {
+          ownerId: memberId,
+          name: createWorkspaceDto.name,
+        },
+      },
+    });
+
+    if (existingWorkspace)
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.WORKSPACE_ALREADY_EXSITS),
+      );
+
     const newWorkspace = await this.prismaService.workspace.create({
       data: {
         ...createWorkspaceDto,
         ownerId: memberId,
+        WorkspaceMember: {
+          create: {
+            memberId,
+            role: WorkspaceRole.OWNER,
+          },
+        },
       },
     });
 
@@ -61,7 +84,7 @@ export class WorkspaceService {
     memberId: string,
     workspaceId: string,
   ): Promise<WorkspaceResponseDto> {
-    const workspace = await this.validateWorkspaceAccess(workspaceId, memberId);
+    const workspace = await this.validateWorkspaceAccess(memberId, workspaceId);
 
     return WorkspaceResponseDto.from(workspace);
   }
@@ -71,7 +94,7 @@ export class WorkspaceService {
     workspaceId: string,
     updateWorkspaceDto: UpdateWorkspaceDto,
   ): Promise<WorkspaceResponseDto> {
-    await this.validateWorkspaceAccess(workspaceId, memberId);
+    await this.validateWorkspaceAccess(memberId, workspaceId);
 
     const workspace = await this.prismaService.workspace.update({
       data: updateWorkspaceDto,
@@ -84,7 +107,7 @@ export class WorkspaceService {
   }
 
   async remove(memberId: string, workspaceId: string): Promise<void> {
-    await this.validateWorkspaceAccess(workspaceId, memberId);
+    await this.validateWorkspaceAccess(memberId, workspaceId);
     await this.prismaService.workspace.delete({
       where: {
         id: workspaceId,

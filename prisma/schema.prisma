@@ -8,18 +8,19 @@ datasource db {
 }
 
 model Board {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title           String
   description     String?
-  backgroundColor String    @db.VarChar(7)
-  workspaceId     String    @db.Uuid
-  ownerId         String?   @db.Uuid
-  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime  @default(now()) @db.Timestamptz(6)
-  Member          Member?   @relation(fields: [ownerId], references: [id])
-  Workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  backgroundColor String          @db.VarChar(7)
+  workspaceId     String          @db.Uuid
+  ownerId         String?         @db.Uuid
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime        @default(now()) @db.Timestamptz(6)
+  Member          Member?         @relation(fields: [ownerId], references: [id])
+  Workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   Label           Label[]
   List            List[]
+  FavoriteBoard   FavoriteBoard[]
 }
 
 model Card {
@@ -74,6 +75,7 @@ model Invitation {
   id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   workspaceId  String           @db.Uuid
   inviteeEmail String
+  role         WorkspaceRole
   inviterId    String           @db.Uuid
   status       InvitationStatus @default(PENDING)
   createdAt    DateTime         @default(now()) @db.Timestamptz(6)
@@ -118,6 +120,7 @@ model Member {
   Invitation      Invitation[]
   Workspace       Workspace[]
   WorkspaceMember WorkspaceMember[]
+  FavoriteBoard   FavoriteBoard[]
 }
 
 model Workspace {
@@ -147,6 +150,17 @@ model WorkspaceMember {
   Workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, memberId], map: "idx_workspace_member_unique")
+}
+
+model FavoriteBoard {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId  String   @db.Uuid
+  boardId   String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  Member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  Board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, boardId], map: "idx_favorite_board_unique")
 }
 
 enum CardPriority {
