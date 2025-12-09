@@ -112,6 +112,7 @@ model Member {
   password        String?
   nickname        String?           @unique
   role            MemberRole        @default(USER)
+  imageUrl        String?
   createdAt       DateTime          @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime          @default(now()) @db.Timestamptz(6)
   Board           Board[]
