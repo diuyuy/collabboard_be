@@ -9,6 +9,8 @@ import { IoRedisModule } from './core/infrastructure/io-redis/io-redis.module';
 import { PrismaModule } from './core/infrastructure/prisma-module/prisma.module';
 import { AuthModule } from './features/auth/auth.module';
 import { BoardModule } from './features/board/board.module';
+import { CardModule } from './features/card/card.module';
+import { ListModule } from './features/list/list.module';
 import { WorkspaceModule } from './features/workspace/workspace.module';
 
 @Module({
@@ -30,6 +32,8 @@ import { WorkspaceModule } from './features/workspace/workspace.module';
     AuthModule,
     WorkspaceModule,
     BoardModule,
+    ListModule,
+    CardModule,
   ],
   controllers: [],
   providers: [

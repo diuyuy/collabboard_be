@@ -31,6 +31,8 @@ export enum ResponseCode {
   // 403 Forbidden
   FORBIDDEN = 'FORBIDDEN',
   WORKSPACE_ACCESS_DENIED = 'WORKSPACE_ACCESS_DENIED',
+  ACCESS_BOARD_DENIED = 'ACCESS_BOARD_DENIED',
+  MODIFY_BOARD_DENIED = 'MODIFY_BOARD_DENIED',
 
   // 404 Not Found
   NOT_FOUND = 'NOT_FOUND',
@@ -192,6 +194,18 @@ export class ResponseStatusFactory {
       success: false,
       status: HttpStatus.FORBIDDEN,
       message: '해당 워크스페이스에 대한 접근 권한이 없습니다.',
+    },
+
+    [ResponseCode.ACCESS_BOARD_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 보드에 접근할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.MODIFY_BOARD_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 보드를 수정할 수 있는 권한이 없습니다.',
     },
 
     // 404
