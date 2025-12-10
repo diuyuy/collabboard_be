@@ -21,6 +21,12 @@ export enum ResponseCode {
   INVALID_SORT_OPTION = 'INVALID_SORT_OPTION',
   WORKSPACE_ALREADY_EXSITS = 'WORKSPACE_ALREADY_EXSITS',
   MEMBER_DOES_NOT_EXSIT = 'MEMBER_DOES_NOT_EXSIT',
+  INVALID_ASSIGNEE = 'INVALID_ASSIGNEE',
+  INVALID_LABEL = 'INVALID_LABEL',
+  ASSIGNEE_ALREADY_ASSIGNED = 'ASSIGNEE_ALREADY_ASSIGNED',
+  LABEL_ALREADY_ASSIGNED = 'LABEL_ALREADY_ASSIGNED',
+  ASSIGNEE_NOT_IN_WORKSPACE = 'ASSIGNEE_NOT_IN_WORKSPACE',
+  LABEL_NOT_IN_BOARD = 'LABEL_NOT_IN_BOARD',
 
   //401 Unauthorized
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -41,6 +47,12 @@ export enum ResponseCode {
   WORKSPACE_NOT_FOUND = 'WORKSPACE_NOT_FOUND',
   INVITATION_NOT_FOUND = 'INVITATION_NOT_FOUND',
   BOARD_NOT_FOUND = 'BOARD_NOT_FOUND',
+  LIST_NOT_FOUND = 'LIST_NOT_FOUND',
+  CARD_NOT_FOUND = 'CARD_NOT_FOUND',
+  LABEL_NOT_FOUND = 'LABEL_NOT_FOUND',
+  CARD_ASSIGNEE_NOT_FOUND = 'CARD_ASSIGNEE_NOT_FOUND',
+  CARD_LABEL_NOT_FOUND = 'CARD_LABEL_NOT_FOUND',
+  COMMENT_NOT_FOUND = 'COMMENT_NOT_FOUND',
 
   // 409 Conflict
   CONFLICT = 'CONFLICT',
@@ -158,6 +170,42 @@ export class ResponseStatusFactory {
       message: '존재하지 않는 이메일입니다.',
     },
 
+    [ResponseCode.INVALID_ASSIGNEE]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '유효하지 않은 담당자입니다.',
+    },
+
+    [ResponseCode.INVALID_LABEL]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '유효하지 않은 레이블입니다.',
+    },
+
+    [ResponseCode.ASSIGNEE_ALREADY_ASSIGNED]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '이미 할당된 담당자입니다.',
+    },
+
+    [ResponseCode.LABEL_ALREADY_ASSIGNED]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '이미 추가된 레이블입니다.',
+    },
+
+    [ResponseCode.ASSIGNEE_NOT_IN_WORKSPACE]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '해당 멤버는 워크스페이스에 속해있지 않습니다.',
+    },
+
+    [ResponseCode.LABEL_NOT_IN_BOARD]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '해당 레이블은 보드에 속해있지 않습니다.',
+    },
+
     // 401
     [ResponseCode.UNAUTHORIZED]: {
       success: false,
@@ -243,6 +291,42 @@ export class ResponseStatusFactory {
       success: false,
       status: HttpStatus.NOT_FOUND,
       message: '해당 보드를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.LIST_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '해당 리스트를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.CARD_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '해당 카드를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.LABEL_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '해당 레이블을 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.CARD_ASSIGNEE_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '카드 담당자를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.CARD_LABEL_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '카드 레이블을 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.COMMENT_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '댓글을 찾을 수 없습니다.',
     },
 
     // 409

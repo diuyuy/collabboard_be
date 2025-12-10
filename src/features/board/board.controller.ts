@@ -43,7 +43,7 @@ import { BoardGuard } from './guards/board.guard';
   ListResponseDto,
 )
 @UseGuards(BoardGuard)
-@Controller('boards')
+@Controller('v1/boards')
 export class BoardController {
   constructor(
     private readonly boardService: BoardService,

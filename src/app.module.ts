@@ -10,6 +10,8 @@ import { PrismaModule } from './core/infrastructure/prisma-module/prisma.module'
 import { AuthModule } from './features/auth/auth.module';
 import { BoardModule } from './features/board/board.module';
 import { CardModule } from './features/card/card.module';
+import { CommentModule } from './features/comment/comment.module';
+import { LabelModule } from './features/label/label.module';
 import { ListModule } from './features/list/list.module';
 import { WorkspaceModule } from './features/workspace/workspace.module';
 
@@ -34,6 +36,8 @@ import { WorkspaceModule } from './features/workspace/workspace.module';
     BoardModule,
     ListModule,
     CardModule,
+    LabelModule,
+    CommentModule,
   ],
   controllers: [],
   providers: [
