@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { validateUUID } from 'src/core/utils/validate-uuid';
 import { RequestWithUser } from 'src/features/auth/types/types';
 import { ListService } from 'src/features/list/list.service';
 import { ListRole } from '../decorators/list-role.decorator';
@@ -20,6 +21,8 @@ export class ListAccessGuard implements CanActivate {
 
     // Get listId from params and derive boardId from it
     const listId = request.params.listId;
+
+    validateUUID(listId);
 
     if (accessListAuthority.length === 0) return true;
 

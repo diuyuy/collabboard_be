@@ -40,6 +40,8 @@ model Card {
   CardAssignee CardAssignee[]
   CardLabel    CardLabel[]
   Comment      Comment[]
+
+  @@index([listId, position])
 }
 
 model CardAssignee {
@@ -107,6 +109,8 @@ model List {
   updatedAt DateTime @default(now()) @db.Timestamptz(6)
   Card      Card[]
   Board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@index([boardId, position])
 }
 
 model Member {

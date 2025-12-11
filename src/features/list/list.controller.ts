@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -61,7 +62,7 @@ export class ListController {
   @ListRole(['MODIFY'])
   @Patch(':listId')
   async update(
-    @Param('listId') listId: string,
+    @Param('listId', ParseUUIDPipe) listId: string,
     @Body() updateListDto: UpdateListDto,
   ): Promise<ApiResponse<ListResponseDto>> {
     const list = await this.listService.update(listId, updateListDto);
@@ -88,12 +89,12 @@ export class ListController {
   @ListRole(['MODIFY'])
   @Patch(':listId/position')
   async updatePosition(
-    @Param('listId') listId: string,
+    @Param('listId', ParseUUIDPipe) listId: string,
     @Body() updateListPositionDto: UpdateListPositionDto,
   ): Promise<ApiResponse<ListResponseDto>> {
     const list = await this.listService.updatePosition(
       listId,
-      updateListPositionDto.position,
+      updateListPositionDto,
     );
     return ApiResponse.success(list);
   }

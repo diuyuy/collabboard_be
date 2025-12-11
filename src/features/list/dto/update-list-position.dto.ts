@@ -1,12 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateListPositionDto {
   @ApiProperty({
-    description: 'The position of the list (lexorank string)',
-    example: 'index0',
+    description: 'Position of the previous list (lexorank)',
+    example: '0|hzzzzz:',
+    nullable: true,
   })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  position: string;
+  previousPosition: string | null;
+
+  @ApiProperty({
+    description: 'Position of the next list (lexorank)',
+    example: '0|i00007:',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  nextPosition: string | null;
 }
