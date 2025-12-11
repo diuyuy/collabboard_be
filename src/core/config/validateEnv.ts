@@ -12,6 +12,7 @@ const envSchema = z.object({
   [ENV_KEYS.NODE_ENV]: z.string().nonempty(),
   [ENV_KEYS.CORS_ORIGIN]: z.string().nonempty(),
   // Database
+  [DATABASE_ENV.DATABASE_URL]: z.string().nonempty(),
   [DATABASE_ENV.DATABASE_HOST]: z.string().nonempty(),
   [DATABASE_ENV.DATABASE_NAME]: z.string().nonempty(),
   [DATABASE_ENV.DATABASE_PASSWORD]: z.string().nonempty(),

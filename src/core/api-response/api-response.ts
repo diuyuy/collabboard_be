@@ -14,11 +14,11 @@ export class ApiResponse<T> {
   readonly success: boolean;
 
   @ApiProperty({
-    description: 'Response code indicating the result of the operation',
-    example: 'OK',
-    type: String,
+    description: 'HTTP status',
+    example: 200,
+    type: Number,
   })
-  readonly code: string;
+  readonly status: number;
 
   @ApiProperty({
     description: 'Human-readable message describing the result',
@@ -36,7 +36,7 @@ export class ApiResponse<T> {
 
   constructor(responseStatus: ResponseStatus, data?: T) {
     this.success = responseStatus.success;
-    this.code = responseStatus.code;
+    this.status = responseStatus.status;
     this.message = responseStatus.message;
     this.data = data;
   }

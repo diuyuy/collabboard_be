@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Member } from 'generated/prisma/client';
-import { Member_role } from 'generated/prisma/enums';
+import { MemberRole } from 'generated/prisma/enums';
 
 export class MemberResponseDto {
   @ApiProperty({
@@ -17,10 +17,10 @@ export class MemberResponseDto {
 
   @ApiProperty({
     description: 'Member role',
-    enum: Member_role,
-    example: Member_role.USER,
+    enum: MemberRole,
+    example: MemberRole.USER,
   })
-  role: Member_role;
+  role: MemberRole;
 
   @ApiProperty({
     description: 'Member nickname',
@@ -29,11 +29,11 @@ export class MemberResponseDto {
   })
   nickname: string | null;
 
-  constructor(memberResponse: MemberResponseDto) {
-    this.id = memberResponse.id;
-    this.email = memberResponse.email;
-    this.role = memberResponse.role;
-    this.nickname = memberResponse.nickname;
+  constructor({ id, email, role, nickname }: MemberResponseDto) {
+    this.id = id;
+    this.email = email;
+    this.role = role;
+    this.nickname = nickname;
   }
 
   static from(member: Member): MemberResponseDto {

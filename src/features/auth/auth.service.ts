@@ -245,7 +245,7 @@ export class AuthService {
 
   private async generateRefreshToken(memberInfo: MemberInfo): Promise<string> {
     const refreshToken = uuidv4();
-    const expireDay = this.configService.get<number>(
+    const expireDay = +this.configService.get<string>(
       AUTH_ENV.AUTH_REFRESH_TOKEN_EXPIRATION_DAYS,
     );
 

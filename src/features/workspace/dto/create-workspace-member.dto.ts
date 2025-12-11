@@ -1,18 +1,16 @@
-import { IsIn, IsString } from 'class-validator';
-import { WorkspaceMember_role } from 'generated/prisma/enums';
+import { IsIn, IsNotEmpty, IsString } from 'class-validator';
+import { WorkspaceRole } from 'generated/prisma/enums';
 
 export class CreateWorkspaceMemberDto {
   @IsString()
-  workspaceId: string;
-
-  @IsString()
+  @IsNotEmpty()
   memberId: string;
 
   @IsIn([
-    WorkspaceMember_role.OWNER,
-    WorkspaceMember_role.ADMIN,
-    WorkspaceMember_role.MEMBER,
-    WorkspaceMember_role.VIEWER,
+    WorkspaceRole.OWNER,
+    WorkspaceRole.ADMIN,
+    WorkspaceRole.MEMBER,
+    WorkspaceRole.VIEWER,
   ])
-  role: WorkspaceMember_role;
+  role: WorkspaceRole;
 }

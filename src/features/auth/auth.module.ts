@@ -23,7 +23,7 @@ import { LocalStrategy } from './strategy/local-strategy';
       useFactory: (configService: ConfigService<EnvSchema, true>) => ({
         secret: configService.get<string>(AUTH_ENV.AUTH_SECRET),
         signOptions: {
-          expiresIn: configService.get<number>(AUTH_ENV.AUTH_EXPIRATION_MILLS),
+          expiresIn: +configService.get<string>(AUTH_ENV.AUTH_EXPIRATION_MILLS),
         },
       }),
       inject: [ConfigService],

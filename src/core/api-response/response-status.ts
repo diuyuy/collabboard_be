@@ -17,6 +17,16 @@ export enum ResponseCode {
   INVALID_EMAIL_FORM = 'INVALID_EMAIL_FORM',
   EMAIL_ALREADY_EXSITS = 'EMAIL_ALREADY_EXSITS',
   INVALID_ID_TYPE = 'INVALID_ID_TYPE',
+  INVALID_NONNEGATIVE_INTEGER = 'INVALID_NONNEGATIVE_INTEGER',
+  INVALID_SORT_OPTION = 'INVALID_SORT_OPTION',
+  WORKSPACE_ALREADY_EXSITS = 'WORKSPACE_ALREADY_EXSITS',
+  MEMBER_DOES_NOT_EXSIT = 'MEMBER_DOES_NOT_EXSIT',
+  INVALID_ASSIGNEE = 'INVALID_ASSIGNEE',
+  INVALID_LABEL = 'INVALID_LABEL',
+  ASSIGNEE_ALREADY_ASSIGNED = 'ASSIGNEE_ALREADY_ASSIGNED',
+  LABEL_ALREADY_ASSIGNED = 'LABEL_ALREADY_ASSIGNED',
+  ASSIGNEE_NOT_IN_WORKSPACE = 'ASSIGNEE_NOT_IN_WORKSPACE',
+  LABEL_NOT_IN_BOARD = 'LABEL_NOT_IN_BOARD',
 
   //401 Unauthorized
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -27,12 +37,32 @@ export enum ResponseCode {
   // 403 Forbidden
   FORBIDDEN = 'FORBIDDEN',
   WORKSPACE_ACCESS_DENIED = 'WORKSPACE_ACCESS_DENIED',
+  ACCESS_BOARD_DENIED = 'ACCESS_BOARD_DENIED',
+  MODIFY_BOARD_DENIED = 'MODIFY_BOARD_DENIED',
+  ACCESS_CARD_DENIED = 'ACCESS_CARD_DENIED',
+  MODIFY_CARD_DENIED = 'MODIFY_CARD_DENIED',
+  ACCESS_LIST_DENIED = 'ACCESS_LIST_DENIED',
+  MODIFY_LIST_DENIED = 'MODIFY_LIST_DENIED',
+  MODIFY_COMMENT_DENIED = 'MODIFY_COMMENT_DENIED',
 
   // 404 Not Found
   NOT_FOUND = 'NOT_FOUND',
   MEMBER_NOT_FOUND = 'MEMBER_NOT_FOUND',
   EMAIL_NOT_FOUND = 'EMAIL_NOT_FOUND',
   WORKSPACE_NOT_FOUND = 'WORKSPACE_NOT_FOUND',
+  INVITATION_NOT_FOUND = 'INVITATION_NOT_FOUND',
+  BOARD_NOT_FOUND = 'BOARD_NOT_FOUND',
+  LIST_NOT_FOUND = 'LIST_NOT_FOUND',
+  CARD_NOT_FOUND = 'CARD_NOT_FOUND',
+  LABEL_NOT_FOUND = 'LABEL_NOT_FOUND',
+  CARD_ASSIGNEE_NOT_FOUND = 'CARD_ASSIGNEE_NOT_FOUND',
+  CARD_LABEL_NOT_FOUND = 'CARD_LABEL_NOT_FOUND',
+  COMMENT_NOT_FOUND = 'COMMENT_NOT_FOUND',
+
+  // 409 Conflict
+  CONFLICT = 'CONFLICT',
+  INVITATION_ALREADY_PROCESSED = 'INVITATION_ALREADY_PROCESSED',
+  MEMBER_ALREADY_IN_WORKSPACE = 'MEMBER_ALREADY_IN_WORKSPACE',
 
   // 500 Internal Server Error
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
@@ -42,7 +72,6 @@ export enum ResponseCode {
 
 export class ResponseStatus {
   readonly success: boolean;
-  readonly code: string;
   readonly status: number;
   readonly message: string;
 }
@@ -56,7 +85,6 @@ export class ResponseStatusFactory {
     // 200
     [ResponseCode.OK]: {
       success: true,
-      code: 'SUCCESS',
       status: HttpStatus.OK,
       message: '요청이 성공적으로 처리되었습니다.',
     },
@@ -64,21 +92,18 @@ export class ResponseStatusFactory {
     // 201
     [ResponseCode.CREATED]: {
       success: true,
-      code: ResponseCode.CREATED,
       status: HttpStatus.CREATED,
       message: '리소스가 성공적으로 생성되었습니다.',
     },
 
     [ResponseCode.MEMBER_CREATED]: {
       success: true,
-      code: ResponseCode.MEMBER_CREATED,
       status: HttpStatus.CREATED,
       message: '회원가입이 성공적으로 완료되었습니다..',
     },
 
     [ResponseCode.WORKSPACE_CREATED]: {
       success: true,
-      code: ResponseCode.WORKSPACE_CREATED,
       status: HttpStatus.CREATED,
       message: 'Workspace가 성공적으로 생성되었습니다..',
     },
@@ -86,78 +111,127 @@ export class ResponseStatusFactory {
     // 400
     [ResponseCode.BAD_REQUEST]: {
       success: false,
-      code: ResponseCode.BAD_REQUEST,
       status: HttpStatus.BAD_REQUEST,
       message: '잘못된 요청입니다.',
     },
 
     [ResponseCode.INVALID_VERIFYCATION_CODE]: {
       success: false,
-      code: ResponseCode.INVALID_VERIFYCATION_CODE,
       status: HttpStatus.BAD_REQUEST,
       message: '유효하지 않은 인증번호 입니다.',
     },
 
     [ResponseCode.INVALID_AUTH_TOKEN]: {
       success: false,
-      code: ResponseCode.INVALID_AUTH_TOKEN,
       status: HttpStatus.BAD_REQUEST,
       message: '유효하지 않은 인증 토큰입니다.',
     },
 
     [ResponseCode.REFRESH_TOKEN_NOT_EXISTS]: {
       success: false,
-      code: ResponseCode.REFRESH_TOKEN_NOT_EXISTS,
       status: HttpStatus.BAD_REQUEST,
       message: '리프레시 토큰이 존재하지 않습니다.',
     },
 
     [ResponseCode.INVALID_EMAIL_FORM]: {
       success: false,
-      code: ResponseCode.INVALID_EMAIL_FORM,
       status: HttpStatus.BAD_REQUEST,
       message: '유효하지 않은 이메일 형식입니다.',
     },
 
     [ResponseCode.EMAIL_ALREADY_EXSITS]: {
       success: false,
-      code: ResponseCode.EMAIL_ALREADY_EXSITS,
       status: HttpStatus.BAD_REQUEST,
       message: '이미 존재하는 이메일입니다.',
     },
 
     [ResponseCode.INVALID_ID_TYPE]: {
       success: false,
-      code: ResponseCode.INVALID_ID_TYPE,
       status: HttpStatus.BAD_REQUEST,
       message: '유효하지 않은 ID 타입 입니다.',
+    },
+
+    [ResponseCode.INVALID_NONNEGATIVE_INTEGER]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '음수가 아닌 정수 값이어야 합니다.',
+    },
+
+    [ResponseCode.INVALID_SORT_OPTION]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '잘못된 정렬 옵션입니다.',
+    },
+
+    [ResponseCode.WORKSPACE_ALREADY_EXSITS]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '이미 존재하는 워크스페이스입니다.',
+    },
+
+    [ResponseCode.MEMBER_DOES_NOT_EXSIT]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '존재하지 않는 이메일입니다.',
+    },
+
+    [ResponseCode.INVALID_ASSIGNEE]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '유효하지 않은 담당자입니다.',
+    },
+
+    [ResponseCode.INVALID_LABEL]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '유효하지 않은 레이블입니다.',
+    },
+
+    [ResponseCode.ASSIGNEE_ALREADY_ASSIGNED]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '이미 할당된 담당자입니다.',
+    },
+
+    [ResponseCode.LABEL_ALREADY_ASSIGNED]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '이미 추가된 레이블입니다.',
+    },
+
+    [ResponseCode.ASSIGNEE_NOT_IN_WORKSPACE]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '해당 멤버는 워크스페이스에 속해있지 않습니다.',
+    },
+
+    [ResponseCode.LABEL_NOT_IN_BOARD]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '해당 레이블은 보드에 속해있지 않습니다.',
     },
 
     // 401
     [ResponseCode.UNAUTHORIZED]: {
       success: false,
-      code: ResponseCode.UNAUTHORIZED,
       status: HttpStatus.UNAUTHORIZED,
       message: '인증이 필요합니다.',
     },
 
     [ResponseCode.INVALID_JWT_TOKEN]: {
       success: false,
-      code: ResponseCode.INVALID_JWT_TOKEN,
       status: HttpStatus.UNAUTHORIZED,
       message: '인증이 필요합니다.',
     },
 
     [ResponseCode.INVALID_AUTH_FORMAT]: {
       success: false,
-      code: ResponseCode.INVALID_AUTH_FORMAT,
       status: HttpStatus.UNAUTHORIZED,
-      message: '유효하지 않은 인증 요청 형식입니다.',
+      message: '잘못된 이메일 혹은 비밀번호 입니다.',
     },
 
     [ResponseCode.INVALID_REFRESH_TOKEN]: {
       success: false,
-      code: ResponseCode.INVALID_REFRESH_TOKEN,
       status: HttpStatus.UNAUTHORIZED,
       message: '유효하지 않은 리프레시 토큰입니다.',
     },
@@ -165,65 +239,164 @@ export class ResponseStatusFactory {
     // 403
     [ResponseCode.FORBIDDEN]: {
       success: false,
-      code: ResponseCode.FORBIDDEN,
       status: HttpStatus.FORBIDDEN,
       message: '접근 권한이 없습니다.',
     },
 
     [ResponseCode.WORKSPACE_ACCESS_DENIED]: {
       success: false,
-      code: ResponseCode.WORKSPACE_ACCESS_DENIED,
       status: HttpStatus.FORBIDDEN,
       message: '해당 워크스페이스에 대한 접근 권한이 없습니다.',
+    },
+
+    [ResponseCode.ACCESS_BOARD_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 보드에 접근할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.MODIFY_BOARD_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 보드를 수정할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.ACCESS_CARD_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 카드에 접근할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.MODIFY_CARD_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 카드를 수정할 수 있는 권한이 없습니다.',
+    },
+    [ResponseCode.ACCESS_LIST_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 리스트에 접근할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.MODIFY_LIST_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 리스트를 수정할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.MODIFY_COMMENT_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 리스트를 수정할 수 있는 권한이 없습니다.',
     },
 
     // 404
     [ResponseCode.NOT_FOUND]: {
       success: false,
-      code: ResponseCode.NOT_FOUND,
       status: HttpStatus.NOT_FOUND,
       message: '요청한 리소스를 찾을 수 없습니다.',
     },
 
     [ResponseCode.MEMBER_NOT_FOUND]: {
       success: false,
-      code: ResponseCode.MEMBER_NOT_FOUND,
       status: HttpStatus.NOT_FOUND,
       message: '해당 사용자를 찾을 수 없습니다.',
     },
 
     [ResponseCode.EMAIL_NOT_FOUND]: {
       success: false,
-      code: ResponseCode.EMAIL_NOT_FOUND,
       status: HttpStatus.NOT_FOUND,
       message: '해당 사용자를 찾을 수 없습니다.',
     },
 
     [ResponseCode.WORKSPACE_NOT_FOUND]: {
       success: false,
-      code: ResponseCode.WORKSPACE_NOT_FOUND,
       status: HttpStatus.NOT_FOUND,
       message: '해당 워크스페이스를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.INVITATION_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '해당 초대를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.BOARD_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '해당 보드를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.LIST_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '해당 리스트를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.CARD_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '해당 카드를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.LABEL_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '해당 레이블을 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.CARD_ASSIGNEE_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '카드 담당자를 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.CARD_LABEL_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '카드 레이블을 찾을 수 없습니다.',
+    },
+
+    [ResponseCode.COMMENT_NOT_FOUND]: {
+      success: false,
+      status: HttpStatus.NOT_FOUND,
+      message: '댓글을 찾을 수 없습니다.',
+    },
+
+    // 409
+    [ResponseCode.CONFLICT]: {
+      success: false,
+      status: HttpStatus.CONFLICT,
+      message: '리소스 충돌이 발생했습니다.',
+    },
+
+    [ResponseCode.INVITATION_ALREADY_PROCESSED]: {
+      success: false,
+      status: HttpStatus.CONFLICT,
+      message: '이미 처리된 초대입니다.',
+    },
+
+    [ResponseCode.MEMBER_ALREADY_IN_WORKSPACE]: {
+      success: false,
+      status: HttpStatus.CONFLICT,
+      message: '이미 워크스페이스의 멤버입니다.',
     },
 
     // 500
     [ResponseCode.INTERNAL_SERVER_ERROR]: {
       success: false,
-      code: ResponseCode.INTERNAL_SERVER_ERROR,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       message: '서버 내부 오류가 발생했습니다.',
     },
 
     [ResponseCode.SEND_EMAIL_FAIL]: {
       success: false,
-      code: ResponseCode.SEND_EMAIL_FAIL,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       message: '이메일 발송을 실패했습니다.',
     },
 
     [ResponseCode.HASH_PASSWORD_FAIL]: {
       success: false,
-      code: ResponseCode.HASH_PASSWORD_FAIL,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       message: '이메일 발송을 실패했습니다.',
     },
