@@ -24,12 +24,11 @@ import {
   ResponseStatusFactory,
 } from 'src/core/api-response/response-status';
 import { RequestWithUser } from 'src/features/auth/types/types';
-import { BoardRole } from 'src/features/board/decorator/board-role';
-import { BoardGuard } from 'src/features/board/guards/board.guard';
 import { CommentService } from '../comment/comment.service';
 import { CommentResponseDto } from '../comment/dto/comment-response.dto';
 import { CreateCommentDto } from '../comment/dto/create-comment.dto';
 import { CardService } from './card.service';
+import { CardRole } from './decorators/card-role.decorator';
 import { AddCardAssigneeDto } from './dto/add-card-assignee.dto';
 import { AddCardLabelDto } from './dto/add-card-label.dto';
 import { CardAssigneeResponseDto } from './dto/card-assignee-response.dto';
@@ -37,6 +36,7 @@ import { CardDetailResponseDto } from './dto/card-detail-response.dto';
 import { CardLabelResponseDto } from './dto/card-label-response.dto';
 import { MoveCardDto } from './dto/move-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
+import { CardAccessGuard } from './guards/card-access.guard';
 
 @ApiTags('Cards')
 @ApiExtraModels(
@@ -45,7 +45,7 @@ import { UpdateCardDto } from './dto/update-card.dto';
   CardLabelResponseDto,
   CommentResponseDto,
 )
-@UseGuards(BoardGuard)
+@UseGuards(CardAccessGuard)
 @Controller('v1/cards')
 export class CardController {
   constructor(
@@ -69,7 +69,7 @@ export class CardController {
       ],
     },
   })
-  @BoardRole(['VIEW'])
+  @CardRole(['VIEW'])
   @Get(':cardId')
   async findOne(
     @Param('cardId') cardId: string,
@@ -88,7 +88,7 @@ export class CardController {
       $ref: getSchemaPath(ApiResponse),
     },
   })
-  @BoardRole(['MODIFY'])
+  @CardRole(['MODIFY'])
   @Patch(':cardId')
   async update(
     @Param('cardId') cardId: string,
@@ -123,7 +123,7 @@ export class CardController {
       ],
     },
   })
-  @BoardRole(['MODIFY'])
+  @CardRole(['MODIFY'])
   @Patch(':cardId/move')
   async move(
     @Param('cardId') cardId: string,
@@ -161,7 +161,7 @@ export class CardController {
       ],
     },
   })
-  @BoardRole(['MODIFY'])
+  @CardRole(['MODIFY'])
   @Delete(':cardId')
   async remove(
     @Param('cardId') cardId: string,
@@ -187,7 +187,7 @@ export class CardController {
       ],
     },
   })
-  @BoardRole(['MODIFY'])
+  @CardRole(['MODIFY'])
   @Post(':cardId/assignees')
   async addAssignee(
     @Param('cardId') cardId: string,
@@ -222,7 +222,7 @@ export class CardController {
       ],
     },
   })
-  @BoardRole(['MODIFY'])
+  @CardRole(['MODIFY'])
   @Delete(':cardId/assignees/:memberId')
   async removeAssignee(
     @Param('cardId') cardId: string,
@@ -249,7 +249,7 @@ export class CardController {
       ],
     },
   })
-  @BoardRole(['MODIFY'])
+  @CardRole(['MODIFY'])
   @Post(':cardId/labels')
   async addLabel(
     @Param('cardId') cardId: string,
@@ -275,7 +275,7 @@ export class CardController {
       $ref: getSchemaPath(ApiResponse),
     },
   })
-  @BoardRole(['MODIFY'])
+  @CardRole(['MODIFY'])
   @Delete(':cardId/labels/:labelId')
   async removeLabel(
     @Param('cardId') cardId: string,
@@ -304,7 +304,7 @@ export class CardController {
       ],
     },
   })
-  @BoardRole(['VIEW'])
+  @CardRole(['VIEW'])
   @Get(':cardId/comments')
   async getComments(
     @Param('cardId') cardId: string,
@@ -330,7 +330,7 @@ export class CardController {
       ],
     },
   })
-  @BoardRole(['MODIFY'])
+  @CardRole(['MODIFY'])
   @Post(':cardId/comments')
   async createComment(
     @Param('cardId') cardId: string,

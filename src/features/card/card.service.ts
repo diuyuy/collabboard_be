@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CardPriority, CardStatus } from 'generated/prisma/enums';
+import {
+  CardPriority,
+  CardStatus,
+  WorkspaceRole,
+} from 'generated/prisma/enums';
 import {
   ResponseCode,
   ResponseStatusFactory,
@@ -28,6 +32,9 @@ export class CardService {
   ): Promise<CardResponseDto> {
     // Validate list exists
     const list = await this.prismaService.list.findUnique({
+      select: {
+        boardId: true,
+      },
       where: { id: listId },
     });
 
@@ -73,6 +80,7 @@ export class CardService {
         title: createCardDto.title,
         description: createCardDto.description,
         listId,
+        boardId: list.boardId,
         position,
         priority: createCardDto.priority || CardPriority.MEDIUM,
         status: CardStatus.TODO,
@@ -520,30 +528,65 @@ export class CardService {
     });
   }
 
-  async getBoardIdFromCard(cardId: string): Promise<string> {
+  async validateAccessCardAuthority(
+    memberId: string,
+    cardId: string,
+  ): Promise<void> {
+    await this.getWorkspaceMemberRole(memberId, cardId);
+  }
+
+  async validateModifyCardAuthority(
+    memberId: string,
+    cardId: string,
+  ): Promise<void> {
+    const workspaceMember = await this.getWorkspaceMemberRole(memberId, cardId);
+
+    if (workspaceMember.role === 'VIEWER')
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.MODIFY_CARD_DENIED),
+      );
+  }
+
+  private async getWorkspaceMemberRole(
+    memberId: string,
+    cardId: string,
+  ): Promise<{ role: WorkspaceRole }> {
     const card = await this.prismaService.card.findUnique({
-      where: { id: cardId },
-      include: {
-        List: {
+      select: {
+        Board: {
           select: {
-            boardId: true,
+            Workspace: {
+              select: {
+                WorkspaceMember: {
+                  select: {
+                    role: true,
+                  },
+                  where: {
+                    memberId,
+                  },
+                },
+              },
+            },
           },
         },
       },
+      where: {
+        id: cardId,
+      },
     });
 
-    if (!card) {
+    if (!card)
       throw new CommonHttpException(
         ResponseStatusFactory.create(ResponseCode.CARD_NOT_FOUND),
       );
-    }
 
-    if (!card.List) {
+    const workspaceMember = card.Board.Workspace.WorkspaceMember.at(0);
+
+    if (!workspaceMember)
       throw new CommonHttpException(
-        ResponseStatusFactory.create(ResponseCode.LIST_NOT_FOUND),
+        ResponseStatusFactory.create(ResponseCode.ACCESS_CARD_DENIED),
       );
-    }
 
-    return card.List.boardId;
+    return workspaceMember;
   }
 }

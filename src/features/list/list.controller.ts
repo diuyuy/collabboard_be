@@ -21,19 +21,19 @@ import {
   ResponseCode,
   ResponseStatusFactory,
 } from 'src/core/api-response/response-status';
-import { BoardRole } from 'src/features/board/decorator/board-role';
-import { BoardGuard } from 'src/features/board/guards/board.guard';
 import { CardService } from '../card/card.service';
 import { CardResponseDto } from '../card/dto/card-response.dto';
 import { CreateCardDto } from '../card/dto/create-card.dto';
+import { ListRole } from './decorators/list-role.decorator';
 import { ListResponseDto } from './dto/list-response.dto';
 import { UpdateListPositionDto } from './dto/update-list-position.dto';
 import { UpdateListDto } from './dto/update-list.dto';
+import { ListAccessGuard } from './guards/list-access.guard';
 import { ListService } from './list.service';
 
 @ApiTags('Lists')
 @ApiExtraModels(ListResponseDto, CardResponseDto)
-@UseGuards(BoardGuard)
+@UseGuards(ListAccessGuard)
 @Controller('v1/lists')
 export class ListController {
   constructor(
@@ -58,7 +58,7 @@ export class ListController {
       ],
     },
   })
-  @BoardRole(['MODIFY'])
+  @ListRole(['MODIFY'])
   @Patch(':listId')
   async update(
     @Param('listId') listId: string,
@@ -85,7 +85,7 @@ export class ListController {
       ],
     },
   })
-  @BoardRole(['MODIFY'])
+  @ListRole(['MODIFY'])
   @Patch(':listId/position')
   async updatePosition(
     @Param('listId') listId: string,
@@ -119,7 +119,7 @@ export class ListController {
       ],
     },
   })
-  @BoardRole(['MODIFY'])
+  @ListRole(['MODIFY'])
   @Delete(':listId')
   async remove(
     @Param('listId') listId: string,
@@ -145,7 +145,7 @@ export class ListController {
       ],
     },
   })
-  @BoardRole(['MODIFY'])
+  @ListRole(['MODIFY'])
   @Post(':listId/cards')
   async createCard(
     @Param('listId') listId: string,

@@ -1,19 +1,14 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { BoardModule } from '../board/board.module';
+import { Module } from '@nestjs/common';
 import { CommentModule } from '../comment/comment.module';
-import { ListModule } from '../list/list.module';
 import { CardController } from './card.controller';
 import { CardService } from './card.service';
+import { CardAccessGuard } from './guards/card-access.guard';
 import { LexorankService } from './services/lexorank.service';
 
 @Module({
-  imports: [
-    CommentModule,
-    forwardRef(() => ListModule),
-    forwardRef(() => BoardModule),
-  ],
+  imports: [CommentModule],
   controllers: [CardController],
-  providers: [CardService, LexorankService],
+  providers: [CardService, LexorankService, CardAccessGuard],
   exports: [CardService],
 })
 export class CardModule {}

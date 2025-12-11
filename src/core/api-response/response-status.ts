@@ -39,6 +39,11 @@ export enum ResponseCode {
   WORKSPACE_ACCESS_DENIED = 'WORKSPACE_ACCESS_DENIED',
   ACCESS_BOARD_DENIED = 'ACCESS_BOARD_DENIED',
   MODIFY_BOARD_DENIED = 'MODIFY_BOARD_DENIED',
+  ACCESS_CARD_DENIED = 'ACCESS_CARD_DENIED',
+  MODIFY_CARD_DENIED = 'MODIFY_CARD_DENIED',
+  ACCESS_LIST_DENIED = 'ACCESS_LIST_DENIED',
+  MODIFY_LIST_DENIED = 'MODIFY_LIST_DENIED',
+  MODIFY_COMMENT_DENIED = 'MODIFY_COMMENT_DENIED',
 
   // 404 Not Found
   NOT_FOUND = 'NOT_FOUND',
@@ -254,6 +259,35 @@ export class ResponseStatusFactory {
       success: false,
       status: HttpStatus.FORBIDDEN,
       message: '해당 보드를 수정할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.ACCESS_CARD_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 카드에 접근할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.MODIFY_CARD_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 카드를 수정할 수 있는 권한이 없습니다.',
+    },
+    [ResponseCode.ACCESS_LIST_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 리스트에 접근할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.MODIFY_LIST_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 리스트를 수정할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.MODIFY_COMMENT_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 리스트를 수정할 수 있는 권한이 없습니다.',
     },
 
     // 404
