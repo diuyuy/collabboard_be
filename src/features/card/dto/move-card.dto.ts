@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class MoveCardDto {
   @ApiProperty({
@@ -11,10 +11,22 @@ export class MoveCardDto {
   listId: string;
 
   @ApiProperty({
-    description: 'Target position (lexorank string)',
-    example: '0|hzj:00002',
+    description: 'Position of the previous card (lexorank)',
+    example: '0|hzzzzz:',
+    nullable: true,
   })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  position: string;
+  previousPosition: string | null;
+
+  @ApiProperty({
+    description: 'Position of the next card (lexorank)',
+    example: '0|i00007:',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  nextPosition: string | null;
 }

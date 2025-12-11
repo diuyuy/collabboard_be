@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { validateUUID } from 'src/core/utils/validate-uuid';
 import { RequestWithUser } from 'src/features/auth/types/types';
 import { BoardService } from 'src/features/board/board.service';
 import { BoardRole } from '../decorators/board-role.decorator';
@@ -20,6 +21,8 @@ export class BoardAccessGuard implements CanActivate {
 
     // Get boardId directly from params
     const boardId = request.params.boardId;
+
+    validateUUID(boardId);
 
     if (accessBoardAuthority.length === 0) return true;
 

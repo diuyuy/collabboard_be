@@ -6,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { CommonHttpException } from './common-http-exception';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -41,6 +42,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
       JSON.stringify(logData, null, 2),
     );
 
-    response.status(status).json(exception.getResponse());
+    const exceptionResponse =
+      exception instanceof CommonHttpException
+        ? exception.getResponse()
+        : {
+            success: false,
+            status: exception.getStatus(),
+            message: exception.message,
+          };
+
+    response.status(status).json(exceptionResponse);
   }
 }

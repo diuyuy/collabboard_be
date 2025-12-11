@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Req,
@@ -69,7 +70,7 @@ export class BoardController {
   @BoardRole(['VIEW'])
   @Get(':boardId')
   async findOne(
-    @Param('boardId') boardId: string,
+    @Param('boardId', ParseUUIDPipe) boardId: string,
   ): Promise<ApiResponse<BoardDetailResponseDto>> {
     const board = await this.boardService.findOne(boardId);
 
@@ -96,7 +97,7 @@ export class BoardController {
   @BoardRole(['MODIFY'])
   @Patch(':boardId')
   async update(
-    @Param('boardId') boardId: string,
+    @Param('boardId', ParseUUIDPipe) boardId: string,
     @Body() updateBoardDto: UpdateBoardDto,
   ): Promise<ApiResponse<BoardResponseDto>> {
     const board = await this.boardService.update(boardId, updateBoardDto);
@@ -128,7 +129,7 @@ export class BoardController {
   @BoardRole(['MODIFY'])
   @Delete(':boardId')
   async remove(
-    @Param('boardId') boardId: string,
+    @Param('boardId', ParseUUIDPipe) boardId: string,
   ): Promise<ApiResponse<{ id: string }>> {
     const result = await this.boardService.remove(boardId);
 
@@ -154,7 +155,7 @@ export class BoardController {
   @BoardRole(['VIEW'])
   @Post(':boardId/favorites')
   async addFavorite(
-    @Param('boardId') boardId: string,
+    @Param('boardId', ParseUUIDPipe) boardId: string,
     @Req() req: RequestWithUser,
   ): Promise<ApiResponse<FavoriteBoardResponseDto>> {
     const memberId = req.user.id;
@@ -185,7 +186,7 @@ export class BoardController {
   @BoardRole(['VIEW'])
   @Delete(':boardId/favorites')
   async removeFavorite(
-    @Param('boardId') boardId: string,
+    @Param('boardId', ParseUUIDPipe) boardId: string,
     @Req() req: RequestWithUser,
   ): Promise<ApiResponse<FavoriteBoardResponseDto>> {
     const memberId = req.user.id;
@@ -214,7 +215,7 @@ export class BoardController {
   @BoardRole(['MODIFY'])
   @Post(':boardId/lists')
   async createList(
-    @Param('boardId') boardId: string,
+    @Param('boardId', ParseUUIDPipe) boardId: string,
     @Body() createListDto: CreateListDto,
   ): Promise<ApiResponse<ListResponseDto>> {
     const listResponseDto = await this.listService.create(
