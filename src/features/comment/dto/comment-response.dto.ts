@@ -66,8 +66,8 @@ export class CommentResponseDto {
       member: {
         id: comment.Member?.id ?? '',
         email: comment.Member?.email ?? '',
-        nickname: comment.Member?.nickname ?? '',
-        imageUrl: comment.Member?.imageUrl ?? '',
+        nickname: comment.Member?.nickname ?? null,
+        imageUrl: comment.Member?.imageUrl ?? null,
       },
     };
   }

@@ -43,6 +43,7 @@ export enum ResponseCode {
   MODIFY_CARD_DENIED = 'MODIFY_CARD_DENIED',
   ACCESS_LIST_DENIED = 'ACCESS_LIST_DENIED',
   MODIFY_LIST_DENIED = 'MODIFY_LIST_DENIED',
+  MODIFY_COMMENT_DENIED = 'MODIFY_COMMENT_DENIED',
 
   // 404 Not Found
   NOT_FOUND = 'NOT_FOUND',
@@ -278,6 +279,12 @@ export class ResponseStatusFactory {
     },
 
     [ResponseCode.MODIFY_LIST_DENIED]: {
+      success: false,
+      status: HttpStatus.FORBIDDEN,
+      message: '해당 리스트를 수정할 수 있는 권한이 없습니다.',
+    },
+
+    [ResponseCode.MODIFY_COMMENT_DENIED]: {
       success: false,
       status: HttpStatus.FORBIDDEN,
       message: '해당 리스트를 수정할 수 있는 권한이 없습니다.',
