@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Req,
@@ -34,6 +35,7 @@ import { AddCardLabelDto } from './dto/add-card-label.dto';
 import { CardAssigneeResponseDto } from './dto/card-assignee-response.dto';
 import { CardDetailResponseDto } from './dto/card-detail-response.dto';
 import { CardLabelResponseDto } from './dto/card-label-response.dto';
+import { MoveCardResponseDto } from './dto/move-card-response.dto';
 import { MoveCardDto } from './dto/move-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { CardAccessGuard } from './guards/card-access.guard';
@@ -44,6 +46,7 @@ import { CardAccessGuard } from './guards/card-access.guard';
   CardAssigneeResponseDto,
   CardLabelResponseDto,
   CommentResponseDto,
+  MoveCardResponseDto,
 )
 @UseGuards(CardAccessGuard)
 @Controller('v1/cards')
@@ -72,7 +75,7 @@ export class CardController {
   @CardRole(['VIEW'])
   @Get(':cardId')
   async findOne(
-    @Param('cardId') cardId: string,
+    @Param('cardId', ParseUUIDPipe) cardId: string,
   ): Promise<ApiResponse<CardDetailResponseDto>> {
     const card = await this.cardService.findOne(cardId);
     return ApiResponse.success(card);
@@ -110,13 +113,7 @@ export class CardController {
         {
           properties: {
             data: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                listId: { type: 'string' },
-                position: { type: 'string' },
-                updatedAt: { type: 'string', format: 'date-time' },
-              },
+              $ref: getSchemaPath(MoveCardResponseDto),
             },
           },
         },
@@ -126,16 +123,9 @@ export class CardController {
   @CardRole(['MODIFY'])
   @Patch(':cardId/move')
   async move(
-    @Param('cardId') cardId: string,
+    @Param('cardId', ParseUUIDPipe) cardId: string,
     @Body() moveCardDto: MoveCardDto,
-  ): Promise<
-    ApiResponse<{
-      id: string;
-      listId: string;
-      position: string;
-      updatedAt: Date;
-    }>
-  > {
+  ): Promise<ApiResponse<MoveCardResponseDto>> {
     const result = await this.cardService.move(cardId, moveCardDto);
     return ApiResponse.success(result);
   }
@@ -164,7 +154,7 @@ export class CardController {
   @CardRole(['MODIFY'])
   @Delete(':cardId')
   async remove(
-    @Param('cardId') cardId: string,
+    @Param('cardId', ParseUUIDPipe) cardId: string,
   ): Promise<ApiResponse<{ id: string }>> {
     const result = await this.cardService.remove(cardId);
     return ApiResponse.success(result);
@@ -190,7 +180,7 @@ export class CardController {
   @CardRole(['MODIFY'])
   @Post(':cardId/assignees')
   async addAssignee(
-    @Param('cardId') cardId: string,
+    @Param('cardId', ParseUUIDPipe) cardId: string,
     @Body() addCardAssigneeDto: AddCardAssigneeDto,
   ): Promise<ApiResponse<CardAssigneeResponseDto>> {
     const result = await this.cardService.addAssignee(

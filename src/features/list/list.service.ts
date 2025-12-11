@@ -5,22 +5,33 @@ import {
   ResponseStatusFactory,
 } from 'src/core/api-response/response-status';
 import { CommonHttpException } from 'src/core/exception/common-http-exception';
+import { LexorankService } from 'src/core/infrastructure/lexorank/lexorank.service';
 import { PrismaService } from 'src/core/infrastructure/prisma-module/prisma.service';
 import { CreateListDto } from './dto/create-list.dto';
 import { ListResponseDto } from './dto/list-response.dto';
+import { UpdateListPositionDto } from './dto/update-list-position.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 
 @Injectable()
 export class ListService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly lexorankService: LexorankService,
+  ) {}
 
   async create(
     boardId: string,
-    createListDto: CreateListDto,
+    { previousPosition, nextPosition, ...restProps }: CreateListDto,
   ): Promise<ListResponseDto> {
+    const position = this.lexorankService.generatePosition(
+      previousPosition,
+      nextPosition,
+    );
+
     const list = await this.prismaService.list.create({
       data: {
-        ...createListDto,
+        ...restProps,
+        position,
         boardId,
       },
     });
@@ -54,7 +65,7 @@ export class ListService {
 
   async updatePosition(
     listId: string,
-    position: string,
+    { previousPosition, nextPosition }: UpdateListPositionDto,
   ): Promise<ListResponseDto> {
     // Validate list exists
     const list = await this.prismaService.list.findUnique({
@@ -67,6 +78,10 @@ export class ListService {
       );
     }
 
+    const position = this.lexorankService.generatePosition(
+      previousPosition,
+      nextPosition,
+    );
     // Update position
     const updatedList = await this.prismaService.list.update({
       where: { id: listId },
@@ -94,21 +109,6 @@ export class ListService {
     });
 
     return { id: listId };
-  }
-
-  async getBoardIdFromList(listId: string): Promise<string> {
-    const list = await this.prismaService.list.findUnique({
-      where: { id: listId },
-      select: { boardId: true },
-    });
-
-    if (!list) {
-      throw new CommonHttpException(
-        ResponseStatusFactory.create(ResponseCode.LIST_NOT_FOUND),
-      );
-    }
-
-    return list.boardId;
   }
 
   async validateAccessListAuthority(

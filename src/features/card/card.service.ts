@@ -10,14 +10,15 @@ import {
 } from 'src/core/api-response/response-status';
 import { CommonHttpException } from 'src/core/exception/common-http-exception';
 import { PrismaService } from 'src/core/infrastructure/prisma-module/prisma.service';
+import { LexorankService } from '../../core/infrastructure/lexorank/lexorank.service';
 import { CardAssigneeResponseDto } from './dto/card-assignee-response.dto';
 import { CardDetailResponseDto } from './dto/card-detail-response.dto';
 import { CardLabelResponseDto } from './dto/card-label-response.dto';
 import { CardResponseDto } from './dto/card-response.dto';
 import { CreateCardDto } from './dto/create-card.dto';
+import { MoveCardResponseDto } from './dto/move-card-response.dto';
 import { MoveCardDto } from './dto/move-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
-import { LexorankService } from './services/lexorank.service';
 
 @Injectable()
 export class CardService {
@@ -70,9 +71,10 @@ export class CardService {
       }
     }
 
-    // Generate initial position (using a simple lexorank-like approach)
-    // In production, use a proper lexorank library
-    const position = '0|hzi:00001';
+    const position = this.lexorankService.generatePosition(
+      createCardDto.previousPosition,
+      createCardDto.nextPosition,
+    );
 
     // Create card with relations
     const card = await this.prismaService.card.create({
@@ -279,13 +281,8 @@ export class CardService {
 
   async move(
     cardId: string,
-    moveCardDto: MoveCardDto,
-  ): Promise<{
-    id: string;
-    listId: string;
-    position: string;
-    updatedAt: Date;
-  }> {
+    { listId, previousPosition, nextPosition }: MoveCardDto,
+  ): Promise<MoveCardResponseDto> {
     // Validate card exists
     const card = await this.prismaService.card.findUnique({
       where: { id: cardId },
@@ -299,7 +296,7 @@ export class CardService {
 
     // Validate target list exists
     const targetList = await this.prismaService.list.findUnique({
-      where: { id: moveCardDto.listId },
+      where: { id: listId },
     });
 
     if (!targetList) {
@@ -308,21 +305,21 @@ export class CardService {
       );
     }
 
+    const position = this.lexorankService.generatePosition(
+      previousPosition,
+      nextPosition,
+    );
+
     // Update card position and list
     const updatedCard = await this.prismaService.card.update({
       where: { id: cardId },
       data: {
-        listId: moveCardDto.listId,
-        position: moveCardDto.position,
+        listId,
+        position,
       },
     });
 
-    return {
-      id: updatedCard.id,
-      listId: updatedCard.listId!,
-      position: updatedCard.position,
-      updatedAt: updatedCard.updatedAt,
-    };
+    return MoveCardResponseDto.from({ ...updatedCard, listId });
   }
 
   async remove(cardId: string): Promise<{ id: string }> {

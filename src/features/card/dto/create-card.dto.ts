@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CardPriority } from 'generated/prisma/enums';
 import {
   IsArray,
   IsEnum,
@@ -8,6 +7,7 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
+import { CardPriority } from 'generated/prisma/enums';
 
 export class CreateCardDto {
   @ApiProperty({
@@ -36,6 +36,26 @@ export class CreateCardDto {
   @IsEnum(CardPriority)
   @IsOptional()
   priority?: CardPriority;
+
+  @ApiProperty({
+    description: 'Position of the previous card (lexorank)',
+    example: '0|hzzzzz:',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  previousPosition: string | null;
+
+  @ApiProperty({
+    description: 'Position of the next card (lexorank)',
+    example: '0|i00007:',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  nextPosition: string | null;
 
   @ApiProperty({
     description: 'Array of member IDs to assign to the card',
