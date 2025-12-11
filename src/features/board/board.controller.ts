@@ -28,12 +28,12 @@ import { CreateListDto } from '../list/dto/create-list.dto';
 import { ListResponseDto } from '../list/dto/list-response.dto';
 import { ListService } from '../list/list.service';
 import { BoardService } from './board.service';
-import { BoardRole } from './decorator/board-role';
+import { BoardRole } from './decorators/board-role.decorator';
 import { BoardDetailResponseDto } from './dto/board-detail-response.dto';
 import { BoardResponseDto } from './dto/board-response.dto';
 import { FavoriteBoardResponseDto } from './dto/favorite-board-response.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
-import { BoardGuard } from './guards/board.guard';
+import { BoardAccessGuard } from './guards/board-access.guard';
 
 @ApiTags('Boards')
 @ApiExtraModels(
@@ -42,7 +42,7 @@ import { BoardGuard } from './guards/board.guard';
   FavoriteBoardResponseDto,
   ListResponseDto,
 )
-@UseGuards(BoardGuard)
+@UseGuards(BoardAccessGuard)
 @Controller('v1/boards')
 export class BoardController {
   constructor(

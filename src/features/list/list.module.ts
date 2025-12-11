@@ -1,13 +1,13 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { BoardModule } from '../board/board.module';
+import { Module } from '@nestjs/common';
 import { CardModule } from '../card/card.module';
+import { ListAccessGuard } from './guards/list-access.guard';
 import { ListController } from './list.controller';
 import { ListService } from './list.service';
 
 @Module({
-  imports: [forwardRef(() => BoardModule), forwardRef(() => CardModule)],
+  imports: [CardModule],
   controllers: [ListController],
-  providers: [ListService],
+  providers: [ListService, ListAccessGuard],
   exports: [ListService],
 })
 export class ListModule {}

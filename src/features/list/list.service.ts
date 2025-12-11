@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { WorkspaceRole } from 'generated/prisma/enums';
 import {
   ResponseCode,
   ResponseStatusFactory,
@@ -108,5 +109,67 @@ export class ListService {
     }
 
     return list.boardId;
+  }
+
+  async validateAccessListAuthority(
+    memberId: string,
+    listId: string,
+  ): Promise<void> {
+    await this.getWorkspaceMemberRole(memberId, listId);
+  }
+
+  async validateModifyListAuthority(
+    memberId: string,
+    listId: string,
+  ): Promise<void> {
+    const workspaceMember = await this.getWorkspaceMemberRole(memberId, listId);
+
+    if (workspaceMember.role === 'VIEWER')
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.MODIFY_LIST_DENIED),
+      );
+  }
+
+  private async getWorkspaceMemberRole(
+    memberId: string,
+    listId: string,
+  ): Promise<{ role: WorkspaceRole }> {
+    const list = await this.prismaService.list.findUnique({
+      select: {
+        Board: {
+          select: {
+            Workspace: {
+              select: {
+                WorkspaceMember: {
+                  select: {
+                    role: true,
+                  },
+                  where: {
+                    memberId,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      where: {
+        id: listId,
+      },
+    });
+
+    if (!list)
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.LIST_NOT_FOUND),
+      );
+
+    const workspaceMember = list.Board.Workspace.WorkspaceMember.at(0);
+
+    if (!workspaceMember)
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.ACCESS_LIST_DENIED),
+      );
+
+    return workspaceMember;
   }
 }

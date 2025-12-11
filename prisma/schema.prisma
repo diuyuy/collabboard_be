@@ -18,6 +18,7 @@ model Board {
   updatedAt       DateTime        @default(now()) @db.Timestamptz(6)
   Member          Member?         @relation(fields: [ownerId], references: [id])
   Workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  Card            Card[]
   Label           Label[]
   List            List[]
   FavoriteBoard   FavoriteBoard[]
@@ -28,12 +29,14 @@ model Card {
   title        String
   description  String?
   listId       String?        @db.Uuid
+  boardId      String         @db.Uuid
   position     String
   priority     CardPriority
   status       CardStatus     @default(UNKNOWN)
   createdAt    DateTime       @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime       @default(now()) @db.Timestamptz(6)
   List         List?          @relation(fields: [listId], references: [id], onDelete: Cascade)
+  Board        Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
   CardAssignee CardAssignee[]
   CardLabel    CardLabel[]
   Comment      Comment[]

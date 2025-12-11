@@ -289,7 +289,10 @@ export class BoardService {
     return FavoriteBoardResponseDto.from(boardId, false);
   }
 
-  async AccessBoardAuthority(memberId: string, boardId: string): Promise<void> {
+  async validateAccessBoardAuthority(
+    memberId: string,
+    boardId: string,
+  ): Promise<void> {
     await this.getBoardMember(memberId, boardId);
   }
 
