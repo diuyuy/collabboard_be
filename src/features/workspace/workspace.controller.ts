@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseBoolPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -44,6 +45,7 @@ import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { InvitationListItemDto } from './dto/invitation-list-response.dto';
 import { InvitationResponseDto } from './dto/invitation-response.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
+import { WorkspaceBriefResponseDto } from './dto/workspace-brief-response.dto';
 import { WorkspaceMemberResponseDto } from './dto/workspace-member-response.dto';
 import { WorkspaceResponseDto } from './dto/workspace-response.dto';
 import { WorkspaceMemberRoleGuard } from './guards/workspace-member-role.guard';
@@ -57,6 +59,7 @@ import { WorkspaceService } from './workspace.service';
   InvitationResponseDto,
   InvitationListItemDto,
   WorkspaceMemberResponseDto,
+  WorkspaceBriefResponseDto,
   BoardResponseDto,
   PageResponse,
 )
@@ -78,7 +81,7 @@ export class WorkspaceController {
         { $ref: getSchemaPath(ApiResponse) },
         {
           properties: {
-            data: { $ref: getSchemaPath(WorkspaceResponseDto) },
+            data: { $ref: getSchemaPath(WorkspaceBriefResponseDto) },
           },
         },
       ],
@@ -88,7 +91,7 @@ export class WorkspaceController {
   async create(
     @Req() req: RequestWithUser,
     @Body() createWorkspaceDto: CreateWorkspaceDto,
-  ): Promise<ApiResponse<WorkspaceResponseDto>> {
+  ): Promise<ApiResponse<WorkspaceBriefResponseDto>> {
     const memberId = req.user.id;
     const newWorkspace = await this.workspaceService.create(
       memberId,
@@ -194,7 +197,7 @@ export class WorkspaceController {
   })
   @Get(':workspaceId')
   async findOne(
-    @Param('workspaceId') workspaceId: string,
+    @Param('workspaceId', ParseUUIDPipe) workspaceId: string,
     @Req() req: RequestWithUser,
   ): Promise<ApiResponse<WorkspaceResponseDto>> {
     const workspace = await this.workspaceService.findOne(
@@ -220,7 +223,7 @@ export class WorkspaceController {
         { $ref: getSchemaPath(ApiResponse) },
         {
           properties: {
-            data: { $ref: getSchemaPath(WorkspaceResponseDto) },
+            data: { $ref: getSchemaPath(WorkspaceBriefResponseDto) },
           },
         },
       ],
@@ -229,9 +232,9 @@ export class WorkspaceController {
   @Patch(':workspaceId')
   async update(
     @Req() req: RequestWithUser,
-    @Param('workspaceId') workspaceId: string,
+    @Param('workspaceId', ParseUUIDPipe) workspaceId: string,
     @Body() updateWorkspaceDto: UpdateWorkspaceDto,
-  ): Promise<ApiResponse<WorkspaceResponseDto>> {
+  ): Promise<ApiResponse<WorkspaceBriefResponseDto>> {
     const updatedWorkspace = await this.workspaceService.update(
       req.user.id,
       workspaceId,
@@ -262,7 +265,7 @@ export class WorkspaceController {
   @Delete(':workspaceId')
   async remove(
     @Req() req: RequestWithUser,
-    @Param('workspaceId') workspaceId: string,
+    @Param('workspaceId', ParseUUIDPipe) workspaceId: string,
   ): Promise<ApiResponse<void>> {
     await this.workspaceService.remove(req.user.id, workspaceId);
 
@@ -297,7 +300,7 @@ export class WorkspaceController {
   @Post(':workspaceId/invites')
   async createInvitation(
     @Req() req: RequestWithUser,
-    @Param('workspaceId') workspaceId: string,
+    @Param('workspaceId', ParseUUIDPipe) workspaceId: string,
     @Body() createInvitationDto: CreateInvitationDto,
   ): Promise<ApiResponse<InvitationResponseDto[]>> {
     const inviterId = req.user.id;
@@ -396,7 +399,7 @@ export class WorkspaceController {
   })
   @Get(':workspaceId/members')
   async findAllMembers(
-    @Param('workspaceId') workspaceId: string,
+    @Param('workspaceId', ParseUUIDPipe) workspaceId: string,
   ): Promise<ApiResponse<WorkspaceMemberResponseDto[]>> {
     const members =
       await this.workspaceMemberService.findAllMembers(workspaceId);
@@ -447,7 +450,7 @@ export class WorkspaceController {
   @UseGuards(WorkspaceMemberRoleGuard)
   @Patch(':workspaceId/members/:memberId')
   async updateMemberRole(
-    @Param('workspaceId') workspaceId: string,
+    @Param('workspaceId', ParseUUIDPipe) workspaceId: string,
     @Param('memberId') memberId: string,
     @Body('role') role: WorkspaceRole,
   ): Promise<ApiResponse<WorkspaceMemberResponseDto>> {
@@ -488,7 +491,7 @@ export class WorkspaceController {
   @UseGuards(WorkspaceMemberRoleGuard)
   @Delete(':workspaceId/members/:memberId')
   async removeMember(
-    @Param('workspaceId') workspaceId: string,
+    @Param('workspaceId', ParseUUIDPipe) workspaceId: string,
     @Param('memberId') memberId: string,
   ): Promise<ApiResponse<void>> {
     await this.workspaceMemberService.removeWorkspaceMember(
@@ -561,7 +564,7 @@ export class WorkspaceController {
   @Get(':workspaceId/boards')
   async findAllBoards(
     @Req() req: RequestWithUser,
-    @Param('workspaceId') workspaceId: string,
+    @Param('workspaceId', ParseUUIDPipe) workspaceId: string,
     @Query('page', ParseNonnegativeIntPipe) page: number,
     @Query('size', ParseNonnegativeIntPipe) size: number,
     @Query(
@@ -612,7 +615,7 @@ export class WorkspaceController {
   })
   @Post(':workspaceId/boards')
   async createBoard(
-    @Param('workspaceId') workspaceId: string,
+    @Param('workspaceId', ParseUUIDPipe) workspaceId: string,
     @Req() req: RequestWithUser,
     @Body() createBoardDto: CreateBoardDto,
   ): Promise<ApiResponse<BoardResponseDto>> {

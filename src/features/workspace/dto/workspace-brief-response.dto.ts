@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { WorkspaceRole } from 'generated/prisma/client';
-import { WorkspaceFromPrisma } from '../types/types';
+import { Workspace } from 'generated/prisma/client';
 
-export class WorkspaceResponseDto {
+export class WorkspaceBriefResponseDto {
   @ApiProperty({
     description: 'Workspace ID',
     example: '550e8400-e29b-41d4-a716-446655440000',
@@ -39,46 +38,21 @@ export class WorkspaceResponseDto {
   })
   updatedAt: Date;
 
-  @ApiProperty({
-    description: 'Number of members in the workspace',
-    example: 5,
-    type: Number,
-  })
-  memberCount: number;
-
-  @ApiProperty({
-    description: 'User role in the workspace',
-    example: 'ADMIN',
-    enum: WorkspaceRole,
-  })
-  role: WorkspaceRole;
-
   constructor({
     id,
     name,
     description,
     createdAt,
     updatedAt,
-    memberCount,
-    role,
-  }: WorkspaceResponseDto) {
+  }: WorkspaceBriefResponseDto) {
     this.id = id;
     this.name = name;
     this.description = description;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
-    this.memberCount = memberCount;
-    this.role = role;
   }
 
-  static from(
-    this: void,
-    { WorkspaceMember, _count, ...rest }: WorkspaceFromPrisma,
-  ): WorkspaceResponseDto {
-    return new WorkspaceResponseDto({
-      ...rest,
-      role: WorkspaceMember[0].role,
-      memberCount: _count.WorkspaceMember,
-    });
+  static from(this: void, workspace: Workspace): WorkspaceBriefResponseDto {
+    return new WorkspaceBriefResponseDto(workspace);
   }
 }
