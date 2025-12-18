@@ -29,11 +29,19 @@ export class MemberResponseDto {
   })
   nickname: string | null;
 
-  constructor({ id, email, role, nickname }: MemberResponseDto) {
+  @ApiProperty({
+    description: 'Member profile image url',
+    example: 'http://', // Note: Keeping the example as is, assuming it might be non-English
+    nullable: true,
+  })
+  imageUrl: string | null;
+
+  constructor({ id, email, role, nickname, imageUrl }: MemberResponseDto) {
     this.id = id;
     this.email = email;
     this.role = role;
     this.nickname = nickname;
+    this.imageUrl = imageUrl;
   }
 
   static from(member: Member): MemberResponseDto {

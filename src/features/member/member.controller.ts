@@ -1,27 +1,19 @@
-import { Controller, Delete, Get, Param } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
+import { ApiResponse } from 'src/core/api-response/api-response';
+import { RequestWithUser } from '../auth/types/types';
+import { MemberResponseDto } from './dto/member-response.dto';
 import { MemberService } from './member.service';
 
-@Controller('v1/member')
+@Controller('v1/members')
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}
 
-  @Get()
-  findAll() {
-    return this.memberService.findAll();
-  }
+  @Get('me')
+  async getMyProfile(
+    @Req() req: RequestWithUser,
+  ): Promise<ApiResponse<MemberResponseDto>> {
+    const member = await this.memberService.getMyProfile(req.user.id);
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.memberService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateMemberDto: UpdateMemberDto) {
-  //   return this.memberService.update(+id, updateMemberDto);
-  // }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.memberService.remove(+id);
+    return ApiResponse.success(member);
   }
 }
