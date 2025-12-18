@@ -10,6 +10,7 @@ import { PrismaService } from 'src/core/infrastructure/prisma-module/prisma.serv
 import { Pageable, WorkspaceSortOption } from 'src/core/types/types';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
+import { WorkspaceBriefResponseDto } from './dto/workspace-brief-response.dto';
 import { WorkspaceResponseDto } from './dto/workspace-response.dto';
 
 @Injectable()
@@ -19,7 +20,7 @@ export class WorkspaceService {
   async create(
     memberId: string,
     createWorkspaceDto: CreateWorkspaceDto,
-  ): Promise<WorkspaceResponseDto> {
+  ): Promise<WorkspaceBriefResponseDto> {
     const existingWorkspace = await this.prismaService.workspace.findUnique({
       select: {
         id: true,
@@ -50,7 +51,7 @@ export class WorkspaceService {
       },
     });
 
-    return WorkspaceResponseDto.from(newWorkspace);
+    return WorkspaceBriefResponseDto.from(newWorkspace);
   }
 
   async findAll(
@@ -59,8 +60,27 @@ export class WorkspaceService {
   ): Promise<PageResponse<WorkspaceResponseDto>> {
     const [workspaces, totalElements] = await Promise.all([
       this.prismaService.workspace.findMany({
+        include: {
+          _count: {
+            select: {
+              WorkspaceMember: true,
+            },
+          },
+          WorkspaceMember: {
+            select: {
+              role: true,
+            },
+            where: {
+              memberId,
+            },
+          },
+        },
         where: {
-          ownerId: memberId,
+          WorkspaceMember: {
+            some: {
+              memberId,
+            },
+          },
         },
         skip: pageable.page * pageable.size,
         take: pageable.size,
@@ -84,7 +104,34 @@ export class WorkspaceService {
     memberId: string,
     workspaceId: string,
   ): Promise<WorkspaceResponseDto> {
-    const workspace = await this.validateWorkspaceAccess(memberId, workspaceId);
+    await this.validateWorkspaceAccess(memberId, workspaceId);
+
+    const workspace = await this.prismaService.workspace.findUnique({
+      where: {
+        id: workspaceId,
+      },
+      include: {
+        _count: {
+          select: {
+            WorkspaceMember: true,
+          },
+        },
+        WorkspaceMember: {
+          select: {
+            role: true,
+          },
+          where: {
+            memberId,
+          },
+        },
+      },
+    });
+
+    if (!workspace) {
+      throw new CommonHttpException(
+        ResponseStatusFactory.create(ResponseCode.WORKSPACE_NOT_FOUND),
+      );
+    }
 
     return WorkspaceResponseDto.from(workspace);
   }
@@ -93,7 +140,7 @@ export class WorkspaceService {
     memberId: string,
     workspaceId: string,
     updateWorkspaceDto: UpdateWorkspaceDto,
-  ): Promise<WorkspaceResponseDto> {
+  ): Promise<WorkspaceBriefResponseDto> {
     await this.validateWorkspaceAccess(memberId, workspaceId);
 
     const workspace = await this.prismaService.workspace.update({
@@ -103,7 +150,7 @@ export class WorkspaceService {
       },
     });
 
-    return WorkspaceResponseDto.from(workspace);
+    return WorkspaceBriefResponseDto.from(workspace);
   }
 
   async remove(memberId: string, workspaceId: string): Promise<void> {

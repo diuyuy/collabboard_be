@@ -122,7 +122,6 @@ export class AuthService {
 
   async checkEmailExists(email: string): Promise<boolean> {
     const member = await this.memberService.findByEmail(email);
-
     return !!member;
   }
 
@@ -219,10 +218,7 @@ export class AuthService {
     await this.memberService.updatePassword(email, hashResult.value);
   }
 
-  private async validateVerificationCode(
-    email: string,
-    verificationCode: string,
-  ) {
+  async validateVerificationCode(email: string, verificationCode: string) {
     const storedVerificationCode = await this.ioRedisService.get(
       this.generateVerificationCodeKey(email),
     );

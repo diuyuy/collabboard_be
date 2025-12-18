@@ -42,6 +42,7 @@ describe('AuthService', () => {
     email: 'user1@example.com',
     role: 'USER',
     nickname: 'User1',
+    imageUrl: '',
   } as const;
 
   const mockedMember = {

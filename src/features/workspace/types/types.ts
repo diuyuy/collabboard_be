@@ -18,3 +18,19 @@ export type InvitationListFromPrisma = {
   inviterId: string;
   status: InvitationStatus;
 };
+
+export type WorkspaceFromPrisma = {
+  WorkspaceMember: {
+    role: WorkspaceRole;
+  }[];
+  _count: {
+    WorkspaceMember: number;
+  };
+} & {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  ownerId: string;
+};
