@@ -27,6 +27,7 @@ export enum ResponseCode {
   LABEL_ALREADY_ASSIGNED = 'LABEL_ALREADY_ASSIGNED',
   ASSIGNEE_NOT_IN_WORKSPACE = 'ASSIGNEE_NOT_IN_WORKSPACE',
   LABEL_NOT_IN_BOARD = 'LABEL_NOT_IN_BOARD',
+  INVALID_VERIFICATION_CODE = 'INVALID_VERIFICATION_CODE',
 
   //401 Unauthorized
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -209,6 +210,12 @@ export class ResponseStatusFactory {
       success: false,
       status: HttpStatus.BAD_REQUEST,
       message: '해당 레이블은 보드에 속해있지 않습니다.',
+    },
+
+    [ResponseCode.INVALID_VERIFICATION_CODE]: {
+      success: false,
+      status: HttpStatus.BAD_REQUEST,
+      message: '유효하지 않은 인증 번호 입니다.',
     },
 
     // 401

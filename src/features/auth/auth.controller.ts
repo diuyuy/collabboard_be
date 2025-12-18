@@ -31,6 +31,7 @@ import { PasswdResetRequestDto } from './dto/passwd-reset-request.dto';
 import { SendVerificationCodeRequestDto } from './dto/send-auth-code-request.dto';
 import { SendResetPasswdRequestDto } from './dto/send-reset-passwd-request.dto';
 import { SignUpRequestDto } from './dto/sign-up-request.dto';
+import { VerificationCodeRequestDto } from './dto/verification-code-request.dto';
 import { LocalAuthGuard } from './guard/local-auth.guard';
 import { RequestWithUser } from './types/types';
 
@@ -236,7 +237,7 @@ export class AuthController {
   ): Promise<ApiResponse<boolean>> {
     const isExists = await this.authService.checkEmailExists(email);
 
-    return ApiResponse.success(!isExists);
+    return ApiResponse.success(isExists);
   }
 
   @ApiOperation({ summary: 'Send Email Verification Code' })
@@ -272,6 +273,14 @@ export class AuthController {
     await this.authService.sendVerificationCodeEmail(email);
 
     return ApiResponse.success();
+  }
+
+  @Post('verification-code/validate')
+  async validateAuthCode(
+    @Body() { email, verificationCode }: VerificationCodeRequestDto,
+  ) {
+    await this.authService.validateVerificationCode(email, verificationCode);
+    return ApiResponse.from(ResponseStatusFactory.create(ResponseCode.OK));
   }
 
   @ApiOperation({ summary: 'Send Password Reset Link' })
