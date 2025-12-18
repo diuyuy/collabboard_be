@@ -154,7 +154,10 @@ export class WorkspaceController {
   async findAll(
     @Query('page', ParseNonnegativeIntPipe) page: number,
     @Query('size', ParseNonnegativeIntPipe) size: number,
-    @Query('sort', new ParsePageSortPipe<WorkspaceSortOption>(['id', 'name']))
+    @Query(
+      'sort',
+      new ParsePageSortPipe<WorkspaceSortOption>(['id', 'name', 'createdAt']),
+    )
     sortOption: PageSortOption<WorkspaceSortOption>,
     @Req()
     req: RequestWithUser,

@@ -12,5 +12,5 @@ export type PageSortOption<T> = {
 
 type MustIncludeId<T> = 'id' extends T ? T : never;
 
-export type WorkspaceSortOption = MustIncludeId<'id' | 'name'>;
+export type WorkspaceSortOption = MustIncludeId<'id' | 'name' | 'createdAt'>;
 export type BoardSortOption = MustIncludeId<'id' | 'title' | 'createdAt'>;
